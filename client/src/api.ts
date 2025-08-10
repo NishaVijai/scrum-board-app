@@ -23,7 +23,7 @@ export const createTask = async (title: string, column: number, row: number = 0)
 
 // moveCard
 export const updateTask = async (task: { id: number | string; title: string; column: number; row: number }) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/Update`, {
+  const response = await fetch(`${API_BASE}api/ScrumBoard/Update`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task),
@@ -40,7 +40,7 @@ export const updateTask = async (task: { id: number | string; title: string; col
 
 // removeCard
 export const deleteTask = async (id: number | string) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard?id=${id}`, {
+  const response = await fetch(`${API_BASE}api/ScrumBoard?id=${id}`, {
     method: 'DELETE',
   });
 
@@ -55,7 +55,7 @@ export const deleteTask = async (id: number | string) => {
 
 // moveList
 export const updateColumnsOrder = async (orderedListIds: string[]) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/UpdateColumnsOrder`, {
+  const response = await fetch(`${API_BASE}api/ScrumBoard/UpdateColumnsOrder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ orderedListIds }),
@@ -72,7 +72,7 @@ export const updateColumnsOrder = async (orderedListIds: string[]) => {
 
 // loadTasksFromBackend
 export const fetchTasks = async () => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/GetAll`);
+  const response = await fetch(`${API_BASE}api/ScrumBoard/GetAll`);
   if (!response.ok) {
     const errorText = await response.text();
     console.error("API error response:", errorText);
