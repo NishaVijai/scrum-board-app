@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { type Card, type List } from '../types';
-import { fetchTasks, createTask, updateTask, deleteTask } from '../api';
+import { fetchTasks, createTask, updateTask, deleteTask, updateColumnsOrder } from '../api';
 
 interface BoardState {
   lists: List[];
-  moveCard: (cardId: string, fromListId: string, toListId: string) => Promise<void>;
   addCard: (listId: string, title: string) => Promise<void>;
+  moveCard: (cardId: string, fromListId: string, toListId: string) => Promise<void>;
   removeCard: (listId: string, cardId: string) => Promise<void>;
   moveList: (fromIndex: number, toIndex: number) => void;
   loadTasksFromBackend: () => Promise<void>;
@@ -26,6 +26,39 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     { id: 'inprogress', title: 'In Progress', cards: [] },
     { id: 'done', title: 'Done', cards: [] },
   ],
+
+  addCard: async (listId, title) => {
+    try {
+      const columnMap: Record<string, number> = {
+        backlog: 0,
+        todo: 1,
+        inprogress: 2,
+        done: 3,
+      };
+      const column = columnMap[listId] ?? 0;
+
+      const newTaskArray = await createTask(title, column, 0);
+      const newTask = newTaskArray[0];
+
+      console.log('Created task from backend:', newTask);
+
+      set((state) => {
+        const list = state.lists.find((l) => l.id === listId);
+        if (!list) return state;
+
+        const newCard: Card = {
+          id: newTask?.id?.toString() ?? Date.now().toString(),
+          title: newTask?.title ?? title,
+        };
+
+        list.cards.push(newCard);
+
+        return { lists: [...state.lists] };
+      });
+    } catch (error) {
+      console.error('Error adding card:', error);
+    }
+  },
 
   moveCard: async (cardId, fromListId, toListId) => {
     set((state) => {
@@ -73,39 +106,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
-  addCard: async (listId, title) => {
-    try {
-      const columnMap: Record<string, number> = {
-        backlog: 0,
-        todo: 1,
-        inprogress: 2,
-        done: 3,
-      };
-      const column = columnMap[listId] ?? 0;
-
-      const newTaskArray = await createTask(title, column, 0);
-      const newTask = newTaskArray[0];
-
-      console.log('Created task from backend:', newTask);
-
-      set((state) => {
-        const list = state.lists.find((l) => l.id === listId);
-        if (!list) return state;
-
-        const newCard: Card = {
-          id: newTask?.id?.toString() ?? Date.now().toString(),
-          title: newTask?.title ?? title,
-        };
-
-        list.cards.push(newCard);
-
-        return { lists: [...state.lists] };
-      });
-    } catch (error) {
-      console.error('Error adding card:', error);
-    }
-  },
-
   removeCard: async (listId, cardId) => {
     try {
       await deleteTask(cardId);
@@ -121,13 +121,23 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
-  moveList: (fromIndex, toIndex) => {
-    set((state) => {
-      const updatedLists = Array.from(state.lists);
-      const [movedList] = updatedLists.splice(fromIndex, 1);
-      updatedLists.splice(toIndex, 0, movedList);
-      return { lists: updatedLists };
-    });
+  //   TODO: MoveList logic, ADD column order persistence to backend
+  moveList: async (fromIndex, toIndex) => {
+    try {
+      set((state) => {
+        const updatedLists = Array.from(state.lists);
+        const [movedList] = updatedLists.splice(fromIndex, 1);
+        updatedLists.splice(toIndex, 0, movedList);
+        return { lists: updatedLists };
+      });
+
+      const orderedListIds = get().lists.map((list) => list.id);
+      await updateColumnsOrder(orderedListIds);
+
+    } catch (error) {
+      console.error("Failed to sync list order with backend", error);
+      // TODO ? reload state or revert move
+    }
   },
 
   loadTasksFromBackend: async () => {
