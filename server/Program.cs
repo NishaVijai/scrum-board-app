@@ -20,8 +20,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReactApp", policy =>
     {
         policy.WithOrigins(
-                "http://localhost:5173",
-                "https://scrum-board-app.onrender.com"
+                "https://scrum-board-app.onrender.com",
+                "http://localhost:5173"
               )
               .AllowAnyHeader()
               .AllowAnyMethod()
