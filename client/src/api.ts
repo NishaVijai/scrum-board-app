@@ -2,7 +2,7 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 // addCard
 export const createTask = async (title: string, column: number, row: number = 0) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/Create`, {
+  const response = await fetch(`${API_BASE}api/ScrumBoard/Create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
