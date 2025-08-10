@@ -24,7 +24,8 @@ builder.Services.AddCors(options =>
                 "https://scrum-board-app.onrender.com"
               )
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
