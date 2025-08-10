@@ -31,7 +31,7 @@ ADD new file inside client (create a new file directly under client folder)
 filename -  .env.development
 
 ADD
-VITE_API_URL=http://localhost:5203/api
+VITE_API_URL=http://localhost:5203
 
 
 2)
@@ -39,7 +39,7 @@ ADD new file inside client (create a new file directly under client folder)
 filename -  .env.production
 
 ADD
-VITE_API_URL=https://scrum-board-app-backend-api.onrender.com/api
+VITE_API_URL=https://scrum-board-app-backend-api.onrender.com
 
 
 3)
