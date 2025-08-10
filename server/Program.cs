@@ -47,8 +47,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// ✅ Apply CORS Policy
+// ✅ Apply CORS Policy early to handle OPTIONS preflight
 app.UseCors("AllowReactApp");
+
+// ✅ Handle OPTIONS requests (preflight) explicitly
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == HttpMethods.Options)
+    {
+        context.Response.StatusCode = 200;
+        return;
+    }
+    await next();
+});
 
 app.UseAuthorization();
 
