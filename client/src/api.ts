@@ -1,10 +1,67 @@
 const API_BASE = import.meta.env.VITE_API_URL;
-// const API_BASE = "https://scrum-board-app-backend-api.onrender.com/api";
 
 export const fetchTasks = async () => {
   const response = await fetch(`${API_BASE}/ScrumBoard/GetAll`);
   if (!response.ok) {
-    throw new Error("API call failed");
+    const errorText = await response.text();
+    console.error("API error response:", errorText);
+    throw new Error(`API call failed: ${response.status} ${response.statusText}`);
   }
+  try {
+    return await response.json();
+  } catch (jsonError) {
+    const text = await response.text();
+    console.error("Invalid JSON from API:", text);
+    throw jsonError;
+  }
+};
+
+export const createTask = async (title: string, column: number, row: number = 0) => {
+  const response = await fetch(`${API_BASE}/ScrumBoard/Create`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title,
+      column,
+      row,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Create task API error:", errorText);
+    throw new Error(`Failed to create task: ${response.status} ${response.statusText}`);
+  }
+
   return await response.json();
+};
+
+export const updateTask = async (task: { id: number | string; title: string; column: number; row: number }) => {
+  const response = await fetch(`${API_BASE}/ScrumBoard/Update`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(task),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Update task API error:", errorText);
+    throw new Error(`Failed to update task: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.json();
+};
+
+export const deleteTask = async (id: number | string) => {
+  const response = await fetch(`${API_BASE}/ScrumBoard?id=${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Delete task API error:", errorText);
+    throw new Error(`Failed to delete task: ${response.status} ${response.statusText}`);
+  }
+
+  return true;
 };

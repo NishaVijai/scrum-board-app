@@ -36,6 +36,7 @@ export const List = ({ list }: Props) => {
       addCard(list.id, newTitle);
       setNewTitle('');
       setIsAdding(false);
+      console.log(`Card added to list ${list.id}: ${newTitle}`);
     }
   };
 

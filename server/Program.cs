@@ -1,5 +1,6 @@
 using Scrum_Board_Backend.Data;
 using Scrum_Board_Backend.Services;
+using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
