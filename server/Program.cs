@@ -30,9 +30,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ✅ Apply CORS Policy
-app.UseCors("AllowReactApp");
-
 // ✅ Ensure DB is created (best inside a scope)
 using (var scope = app.Services.CreateScope())
 {
@@ -48,6 +45,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// ✅ Apply CORS Policy
+app.UseCors("AllowReactApp");
 
 app.UseAuthorization();
 
