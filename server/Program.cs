@@ -20,8 +20,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "http://localhost:5173",
-                "https://scrum-board-web-app.netlify.app",
-                "https://scrum-board-web-app.onrender.com")
+                "https://scrum-board-app.onrender.com"
+              )
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ✅ Apply CORS Policy
-app.UseCors("client");
+app.UseCors("AllowReactApp");
 
 // ✅ Ensure DB is created (best inside a scope)
 using (var scope = app.Services.CreateScope())

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { type Card, type List } from '../types';
+import { fetchTasks } from '../api';
 
 interface BoardState {
   lists: List[];
@@ -7,41 +8,32 @@ interface BoardState {
   addCard: (listId: string, title: string) => void;
   removeCard: (listId: string, cardId: string) => void;
   moveList: (fromIndex: number, toIndex: number) => void;
+  loadTasksFromBackend: () => Promise<void>;
+}
+
+interface BackendTask {
+  id: number | string;
+  title: string;
 }
 
 export const useBoardStore = create<BoardState>((set) => ({
   lists: [
-    {
-      id: 'todo',
-      title: 'To Do',
-      cards: [{ id: '1', title: 'First Task' }],
-    },
-    {
-      id: 'inprogress',
-      title: 'In Progress',
-      cards: [],
-    },
-    {
-      id: 'done',
-      title: 'Done',
-      cards: [],
-    },
+    { id: 'backlog', title: 'Backlog', cards: [] },
+    { id: 'todo', title: 'To Do', cards: [] },
+    { id: 'inprogress', title: 'In Progress', cards: [] },
+    { id: 'done', title: 'Done', cards: [] },
   ],
 
   moveCard: (cardId, fromListId, toListId) =>
     set((state) => {
       const fromList = state.lists.find((l) => l.id === fromListId);
       const toList = state.lists.find((l) => l.id === toListId);
-
       if (!fromList || !toList) return state;
 
       const card = fromList.cards.find((c) => c.id === cardId);
       if (!card) return state;
 
-      // Remove the card from the source list
       fromList.cards = fromList.cards.filter((c) => c.id !== cardId);
-
-      // Add the card to the target list
       toList.cards.push(card);
 
       return { lists: [...state.lists] };
@@ -71,4 +63,26 @@ export const useBoardStore = create<BoardState>((set) => ({
       updatedLists.splice(toIndex, 0, movedList);
       return { lists: updatedLists };
     }),
+
+  loadTasksFromBackend: async () => {
+    try {
+      const tasks: BackendTask[] = await fetchTasks();
+      set((state) => {
+        const updatedLists = state.lists.map((list) =>
+          list.id === 'backlog'
+            ? {
+              ...list,
+              cards: tasks.map((t) => ({
+                id: t.id.toString(),
+                title: t.title,
+              })),
+            }
+            : list
+        );
+        return { lists: updatedLists };
+      });
+    } catch (error) {
+      console.error("Failed to load tasks from backend", error);
+    }
+  },
 }));

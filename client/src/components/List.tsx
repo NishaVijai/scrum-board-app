@@ -13,9 +13,10 @@ export const List = ({ list }: Props) => {
   const addCard = useBoardStore((s) => s.addCard);
   const removeCard = useBoardStore((s) => s.removeCard);
   const moveCard = useBoardStore((s) => s.moveCard);
+  const loadTasksFromBackend = useBoardStore((s) => s.loadTasksFromBackend);
+
   const [newTitle, setNewTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [{ isOver }, drop] = useDrop({
@@ -53,13 +54,17 @@ export const List = ({ list }: Props) => {
     }
   }, [isAdding]);
 
+  useEffect(() => {
+    if (list.id === 'backlog') {
+      loadTasksFromBackend();
+    }
+  }, [list.id, loadTasksFromBackend]);
+
   return (
     <div
       ref={listRef}
       className={`list ${isOver ? 'is-over' : ''}`}
-      style={{
-        border: isOver ? '2px solid green' : 'none',
-      }}
+      style={{ border: isOver ? '2px solid green' : 'none' }}
     >
       <h2 className="list-header">{list.title}</h2>
       <ul className="list-items">
