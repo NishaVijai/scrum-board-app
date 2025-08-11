@@ -52,9 +52,23 @@ ADD (at last line)
 
 
 III)
+Command to run locally:
+
+On one terminal,
+cd client
+npm i
+npm run dev
+
 local test:
 client:
 http://localhost:5173/
+
+
+On another terminal,
+cd server
+dotnet restore
+dotnet build
+dotnet run
 
 server:
 http://localhost:5203/api/ScrumBoard/getall

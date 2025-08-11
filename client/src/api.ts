@@ -2,7 +2,7 @@
 const API_BASE = import.meta.env.VITE_API_URL.replace(/\/$/, '');
 
 // addCard
-export const createTask = async (title: string, column: number, row: number = 0) => {
+export const createTask = async (title: string, column: number, row: number) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard/Create`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -22,8 +22,25 @@ export const createTask = async (title: string, column: number, row: number = 0)
   return await response.json();
 };
 
+// getTask
+export const getTask = async (id: number | string) => {
+  const response = await fetch(`${API_BASE}/api/ScrumBoard/Get?id=${id}`);
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Get task API error:", errorText);
+    throw new Error(`Failed to fetch task: ${response.status} ${response.statusText}`);
+  }
+  return await response.json();
+};
+
 // moveCard
-export const updateTask = async (task: { id: number | string; title: string; column: number; row: number }) => {
+export const updateTask = async (task: {
+  id: number | string;
+  title: string;
+  column: number;
+  row: number;
+  description?: string | null;
+}) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard/Update`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
