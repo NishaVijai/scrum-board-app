@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Scrum_Board_Backend.Models;
 using Scrum_Board_Backend.Services;
@@ -9,6 +10,7 @@ namespace Scrum_Board_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("AllowReactApp")]
     public class ScrumBoardController(IScrumBoardService scrumBoardService) : ControllerBase
     {
         // GET: api/<ScrumBoardController>
