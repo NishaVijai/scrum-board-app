@@ -5,3 +5,6 @@
 /.vs
 /ScrumBoardBackend.Test/bin
 /ScrumBoardBackend.Test/obj
+/ScrumBoardBackend.Test/.vs/ScrumBoardBackend.Test
+/obj/x86/Debug
+/Scrum-Board-App-Project.csproj
