@@ -62,10 +62,10 @@ export const List = ({ list }: Props) => {
   }, [list.id, loadTasksFromBackend]);
 
   return (
-    <div
+    <section
       ref={listRef}
       className={`list ${isOver ? 'is-over' : ''}`}
-      style={{ border: isOver ? '2px solid green' : 'none' }}
+      style={{ border: isOver ? '2px solid green' : '' }}
     >
       <h2 className="list-header">{list.title}</h2>
       <ul className="list-items">
@@ -99,6 +99,6 @@ export const List = ({ list }: Props) => {
           </section>
         </section>
       )}
-    </div>
+    </section>
   );
 };

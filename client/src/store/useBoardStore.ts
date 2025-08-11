@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { type Card, type List } from '../types';
-import { fetchTasks, createTask, updateTask, deleteTask, updateColumnsOrder } from '../api';
+import { createTask, updateTask, deleteTask, updateColumnsOrder, fetchTasks } from '../api';
 
 interface BoardState {
   lists: List[];
   addCard: (listId: string, title: string) => Promise<void>;
+  updateCardDescription: (cardId: string, description: string) => Promise<void>;
   moveCard: (cardId: string, fromListId: string, toListId: string) => Promise<void>;
   removeCard: (listId: string, cardId: string) => Promise<void>;
   moveList: (fromIndex: number, toIndex: number) => void;
@@ -57,6 +58,24 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       });
     } catch (error) {
       console.error('Error adding card:', error);
+    }
+  },
+
+  updateCardDescription: async (cardId: string, description: string) => {
+    try {
+      const tasks: BackendTask[] = await fetchTasks();
+      const task = tasks.find((t) => t.id.toString() === cardId);
+      if (!task) throw new Error('Task not found');
+
+      const updatedTask = {
+        ...task,
+        description,
+      };
+
+      await updateTask(updatedTask);
+
+    } catch (error) {
+      console.error('Failed to update description:', error);
     }
   },
 
@@ -121,7 +140,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
-  //   TODO: MoveList logic, ADD column order persistence to backend
+  //   TODO: MoveList logic, ADD column or orw order persistence on frontend & reflect the order on backend
   moveList: async (fromIndex, toIndex) => {
     try {
       set((state) => {

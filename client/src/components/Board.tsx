@@ -9,11 +9,11 @@ export const Board = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="board-lists">
+      <section className="board-lists">
         {lists.map((list: ListType, index: number) => (
           <List key={list.id} list={list} index={index} />
         ))}
-      </div>
+      </section>
     </DndProvider>
   );
 };
