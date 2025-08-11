@@ -26,6 +26,13 @@ ul {
 
   --text-color: #333;
 
+  --button-bg-transition: #4c6aa9;
+  --button-border-color: #072057;
+
+  --border-transparent: 2px solid transparent;
+
+  --transition-all-property: all 0.2s ease-in-out;
+
   --border-radius: 0.3rem;
   --rounded-border: 50%;
   --list-width: 280px;
@@ -82,10 +89,10 @@ footer {
 }
 
 a {
-  border: 2px solid transparent;
+  border: var(--border-transparent);
   color: inherit;
   padding: 0.5rem 0.3rem;
-  transition: all 0.3s ease-in-out;
+  transition: var(--transition-all-property);
 }
 
 a:focus,
@@ -108,6 +115,7 @@ a:hover {
 
 .list {
   background-color: var(--list-bg);
+  border: var(--border-transparent);
   border-radius: var(--border-radius);
   height: max-content;
   width: 100%;
@@ -154,7 +162,7 @@ a:hover {
 }
 
 .add-a-card-button button {
-  border: 2px solid transparent;
+  border: var(--border-transparent);
   background-color: transparent;
   font-size: 1rem;
   padding: var(--gap);
@@ -180,9 +188,13 @@ a:hover {
 }
 
 .card-item {
+  border: var(--border-transparent);
+  border-radius: 6px;
+  cursor: grab;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  transition: var(--transition-all-property);
 }
 
 .card-item button {
@@ -193,6 +205,18 @@ a:hover {
   cursor: pointer;
   height: 2rem;
   width: 2rem;
+}
+
+.card-item:focus,
+.card-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+.card-item:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
 }
 
 .modal-overlay {
@@ -243,12 +267,26 @@ a:hover {
 
 .modal-content .modal-actions button {
   background-color: var(--button-bg);
-  border: none;
+  border: var(--border-transparent);
   border-radius: var(--border-radius);
   color: var(--card-bg);
   cursor: pointer;
+  font-size: 0.9rem;
   padding: var(--gap);
   width: 500px;
+  transition: var(--transition-all-property);
+}
+
+.modal-content .modal-actions .modal-actions-cancel:focus,
+.modal-content .modal-actions .modal-actions-cancel:hover {
+  background-color: var(--button-bg-transition);
+  border-color: var(--button-border-color);
+}
+
+.modal-content .modal-actions .modal-actions-save:focus,
+.modal-content .modal-actions .modal-actions-save:hover {
+  background-color: var(--button-bg-transition);
+  border-color: var(--button-border-color);
 }
 
 .modal-loading-text {

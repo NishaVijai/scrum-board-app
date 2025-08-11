@@ -65,7 +65,7 @@ export const List = ({ list }: Props) => {
     <section
       ref={listRef}
       className={`list ${isOver ? 'is-over' : ''}`}
-      style={{ border: isOver ? '2px solid green' : 'none' }}
+      style={{ border: isOver ? '2px solid green' : '' }}
     >
       <h2 className="list-header">{list.title}</h2>
       <ul className="list-items">

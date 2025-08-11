@@ -57,8 +57,9 @@ export const CardDescriptionModal = ({ cardId, isOpen, onClose, onSave }: Props)
               onChange={(e) => setDescription(e.target.value)}
             />
             <section className="modal-actions">
-              <button onClick={onClose}>Cancel</button>
+              <button className="modal-actions-cancel" onClick={onClose}>Cancel</button>
               <button
+                className="modal-actions-save"
                 onClick={() => {
                   onSave(description);
                   onClose();
