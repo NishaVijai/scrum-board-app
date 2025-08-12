@@ -35,7 +35,7 @@ export const getTask = async (id: number | string) => {
 
 // moveCard
 export const updateTask = async (task: {
-  id: number | string;
+  id: number;
   title: string;
   column: number;
   row: number;
