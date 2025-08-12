@@ -31,6 +31,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// ✅ Apply CORS Policy early to handle OPTIONS preflight
+app.UseCors("AllowReactApp");
+
 // ✅ Ensure DB is created (best inside a scope)
 using (var scope = app.Services.CreateScope())
 {
@@ -47,19 +50,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// ✅ Apply CORS Policy early to handle OPTIONS preflight
-app.UseCors("AllowReactApp");
-
-// ✅ Handle OPTIONS requests (preflight) explicitly
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == HttpMethods.Options)
-    {
-        context.Response.StatusCode = 200;
-        return;
-    }
-    await next();
-});
+// // ✅ Handle OPTIONS requests (preflight) explicitly
+// app.Use(async (context, next) =>
+// {
+//     if (context.Request.Method == HttpMethods.Options)
+//     {
+//         context.Response.StatusCode = 200;
+//         return;
+//     }
+//     await next();
+// });
 
 app.UseAuthorization();
 
