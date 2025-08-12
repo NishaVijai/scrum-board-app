@@ -3,14 +3,16 @@ import { getTask } from '../api';
 
 type Props = {
   cardId: string;
+  description: string;
   isOpen: boolean;
   onClose: () => void;
   onSave: (description: string) => void;
 };
 
-export const CardDescriptionModal = ({ cardId, isOpen, onClose, onSave }: Props) => {
-  const [description, setDescription] = useState('');
+export const CardDescriptionModal = ({ cardId, description, isOpen, onClose, onSave }: Props) => {
+  const [currentDescription, setCurrentDescription] = useState(description);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,15 +30,24 @@ export const CardDescriptionModal = ({ cardId, isOpen, onClose, onSave }: Props)
     const fetchDescription = async () => {
       try {
         setLoading(true);
+        setError(null);
         const task = await getTask(cardId);
-        setDescription(task.description || '');
+        setCurrentDescription(task.description || '');
+      } catch (err) {
+        setError('Failed to load description. Please try again later.');
+        setCurrentDescription('');
       } finally {
         setLoading(false);
       }
     };
 
-    if (isOpen) fetchDescription();
-  }, [cardId, isOpen]);
+    if (isOpen && !description) {
+      fetchDescription();
+    } else {
+      setCurrentDescription(description);
+      setLoading(false);
+    }
+  }, [cardId, isOpen, description]);
 
   if (!isOpen) return null;
 
@@ -44,8 +55,11 @@ export const CardDescriptionModal = ({ cardId, isOpen, onClose, onSave }: Props)
     <section className="modal-overlay" onClick={onClose}>
       <section className="modal-content" onClick={(e) => e.stopPropagation()}>
         <h2>Edit Description</h2>
-        {loading ? (
+
+        {loading && !error ? (
           <p className="modal-loading-text">Loading...</p>
+        ) : error ? (
+          <p className="modal-error-text">{error}</p>
         ) : (
           <>
             <label htmlFor="description-label">Description</label>
@@ -53,15 +67,15 @@ export const CardDescriptionModal = ({ cardId, isOpen, onClose, onSave }: Props)
               id="description-textarea"
               name="description"
               rows={6}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={currentDescription}
+              onChange={(e) => setCurrentDescription(e.target.value)}
             />
             <section className="modal-actions">
               <button className="modal-actions-cancel" onClick={onClose}>Cancel</button>
               <button
                 className="modal-actions-save"
                 onClick={() => {
-                  onSave(description);
+                  onSave(currentDescription);
                   onClose();
                 }}
               >
