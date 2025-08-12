@@ -60,7 +60,8 @@ export const useBoardStore = create<BoardState>((set, get) => {
           if (!list) return state;
 
           const newCard: Card = {
-            id: newTask?.id?.toString() ?? Date.now().toString(),
+            id: newTask.id.toString(),
+            // id: newTask?.id?.toString() ?? Date.now().toString(),
             title: newTask?.title ?? title,
             row: list.cards.length,
           };
