@@ -1,4 +1,4 @@
-import { useState, forwardRef } from 'react';
+import { useState, forwardRef, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import { ItemTypes, type Card as CardType } from '../types';
 import { CardDescriptionModal } from './CardDescriptionModal';
@@ -12,10 +12,12 @@ type Props = {
 
 export const Card = forwardRef<HTMLLIElement, Props>(({ card, listId, onDelete }, ref) => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [description, setDescription] = useState(card.description || '');
   const updateDescription = useBoardStore((s) => s.updateCardDescription);
 
   const handleSave = async (newDescription: string) => {
     await updateDescription(card.id, newDescription);
+    setDescription(newDescription);
   };
 
   const [{ isDragging }, drag] = useDrag({
@@ -25,6 +27,10 @@ export const Card = forwardRef<HTMLLIElement, Props>(({ card, listId, onDelete }
       isDragging: monitor.isDragging(),
     }),
   });
+
+  useEffect(() => {
+    setDescription(card.description || '');
+  }, [card.description]);
 
   return (
     <>
@@ -59,6 +65,7 @@ export const Card = forwardRef<HTMLLIElement, Props>(({ card, listId, onDelete }
 
       <CardDescriptionModal
         cardId={card.id}
+        description={description}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleSave}

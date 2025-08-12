@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { useBoardStore } from '../store/useBoardStore';
 import { ItemTypes, type Card as CardType, type List as ListType } from '../types';
@@ -6,18 +6,17 @@ import { Card } from './Card';
 
 type Props = {
   list: ListType;
-  index: number;
 };
 
 export const List = ({ list }: Props) => {
   const addCard = useBoardStore((s) => s.addCard);
   const removeCard = useBoardStore((s) => s.removeCard);
   const moveCard = useBoardStore((s) => s.moveCard);
-  const loadTasksFromBackend = useBoardStore((s) => s.loadTasksFromBackend);
-
   const [newTitle, setNewTitle] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const dropRef = useRef<HTMLDivElement | null>(null);
 
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.CARD,
@@ -30,6 +29,8 @@ export const List = ({ list }: Props) => {
       isOver: monitor.isOver(),
     }),
   });
+
+  drop(dropRef);
 
   const handleAdd = () => {
     if (newTitle.trim()) {
@@ -45,25 +46,9 @@ export const List = ({ list }: Props) => {
     setIsAdding(false);
   };
 
-  const listRef = useCallback((node: HTMLDivElement | null) => {
-    drop(node);
-  }, [drop]);
-
-  useEffect(() => {
-    if (isAdding && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isAdding]);
-
-  useEffect(() => {
-    if (list.id === 'backlog') {
-      loadTasksFromBackend();
-    }
-  }, [list.id, loadTasksFromBackend]);
-
   return (
     <section
-      ref={listRef}
+      ref={dropRef}
       className={`list ${isOver ? 'is-over' : ''}`}
       style={{ border: isOver ? '2px solid green' : '' }}
     >
