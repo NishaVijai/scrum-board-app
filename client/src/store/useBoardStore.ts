@@ -4,17 +4,17 @@ import { createTask, updateTask, deleteTask, updateColumnsOrder, fetchTasks } fr
 
 interface BoardState {
   lists: List[];
-  addCard: (listId: string, title: string) => Promise<void>;
-  updateCardDescription: (cardId: string, description: string) => Promise<void>;
-  moveCard: (cardId: string, fromListId: string, toListId: string) => Promise<void>;
-  removeCard: (listId: string, cardId: string) => Promise<void>;
+  addCard: (listId: number, title: string) => Promise<void>;
+  updateCardDescription: (cardId: number, description: string) => Promise<void>;
+  moveCard: (cardId: number, fromListId: number, toListId: number) => Promise<void>;
+  removeCard: (listId: number, cardId: number) => Promise<void>;
   moveList: (fromIndex: number, toIndex: number) => Promise<void>;
   loadTasksFromBackend: () => Promise<void>;
   setLists: (lists: List[]) => void;
 }
 
 interface BackendTask {
-  id: number | string;
+  id: number;
   title: string;
   description?: string | null;
   column: number;
@@ -53,14 +53,13 @@ export const useBoardStore = create<BoardState>((set, get) => {
         const column = columnMap[listId] ?? 0;
 
         const newTaskArray = await createTask(title, column, 0);
-        const newTask = newTaskArray[0];
-
+          const newTask = newTaskArray[0];
         set((state) => {
           const list = state.lists.find((l) => l.id === listId);
           if (!list) return state;
 
           const newCard: Card = {
-            id: newTask.id.toString(),
+            id: newTask.id,
             // id: newTask?.id?.toString() ?? Date.now().toString(),
             title: newTask?.title ?? title,
             row: list.cards.length,
@@ -76,10 +75,10 @@ export const useBoardStore = create<BoardState>((set, get) => {
       }
     },
 
-    updateCardDescription: async (cardId: string, description: string) => {
+    updateCardDescription: async (cardId: number, description: string) => {
       try {
         const tasks: BackendTask[] = await fetchTasks();
-        const task = tasks.find((t) => t.id.toString() === cardId);
+        const task = tasks.find((t) => t.id === cardId);
         if (!task) throw new Error('Task not found');
 
         const updatedTask = {
@@ -143,7 +142,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
         for (let i = 0; i < toList.cards.length; i++) {
           const card = toList.cards[i];
           await updateTask({
-            id: parseInt(card.id),
+            id: card.id,
             title: card.title,
             column,
             row: i,
@@ -156,7 +155,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
           for (let i = 0; i < fromList.cards.length; i++) {
             const card = fromList.cards[i];
             await updateTask({
-              id: parseInt(card.id),
+              id: card.id,
               title: card.title,
               column: columnMap[fromListId] ?? 0,
               row: i,
@@ -229,7 +228,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
           tasks.forEach((task) => {
             const listId = columnToListId[task.column] || 'backlog';
             cardsByListId[listId].push({
-              id: task.id.toString(),
+              id: task.id,
               title: task.title,
               row: task.row,
               description: task.description || '',

@@ -6,7 +6,7 @@ import { useBoardStore } from '../store/useBoardStore';
 
 type Props = {
   card: CardType;
-  listId: string;
+  listId: number;
   onDelete?: () => void;
 };
 

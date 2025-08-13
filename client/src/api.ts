@@ -23,7 +23,7 @@ export const createTask = async (title: string, column: number, row: number) => 
 };
 
 // getTask
-export const getTask = async (id: number | string) => {
+export const getTask = async (id: number ) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard/Get?id=${id}`);
   if (!response.ok) {
     const errorText = await response.text();
@@ -35,7 +35,7 @@ export const getTask = async (id: number | string) => {
 
 // moveCard
 export const updateTask = async (task: {
-  id: number | string;
+  id: number;
   title: string;
   column: number;
   row: number;
@@ -57,7 +57,7 @@ export const updateTask = async (task: {
 };
 
 // removeCard
-export const deleteTask = async (id: number | string) => {
+export const deleteTask = async (id: number ) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard?id=${id}`, {
     method: 'DELETE',
   });
@@ -72,7 +72,7 @@ export const deleteTask = async (id: number | string) => {
 };
 
 // moveList
-export const updateColumnsOrder = async (orderedListIds: string[]) => {
+export const updateColumnsOrder = async (orderedListIds: number[]) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard/UpdateColumnsOrder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

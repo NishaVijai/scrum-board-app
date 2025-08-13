@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getTask } from '../api';
 
 type Props = {
-  cardId: string;
+  cardId: number;
   description: string;
   isOpen: boolean;
   onClose: () => void;

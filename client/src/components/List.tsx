@@ -20,7 +20,7 @@ export const List = ({ list }: Props) => {
 
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.CARD,
-    drop: (item: { id: string; listId: string }) => {
+    drop: (item: { id: number; listId: number }) => {
       if (item.listId !== list.id) {
         moveCard(item.id, item.listId, list.id);
       }
@@ -33,7 +33,7 @@ export const List = ({ list }: Props) => {
   drop(dropRef);
 
   const handleAdd = () => {
-    if (newTitle.trim()) {
+      if (newTitle.trim()) {
       addCard(list.id, newTitle);
       setNewTitle('');
       setIsAdding(false);

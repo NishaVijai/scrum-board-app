@@ -1,12 +1,12 @@
 export type Card = {
-  id: string
+  id: number
   title: string
   row: number
   description?: string | null
 }
 
 export type List = {
-  id: string
+  id: number
   title: string
   cards: Card[]
 }
