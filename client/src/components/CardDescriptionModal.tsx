@@ -2,25 +2,26 @@ import { useEffect, useState } from 'react';
 import { getTask } from '../api';
 
 type Props = {
-  cardId: string;
-  description: string;
+  cardId: number;
+  description: string | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: (description: string) => void;
 };
 
-export const CardDescriptionModal = ({ cardId, description, isOpen, onClose, onSave }: Props) => {
-  const [currentDescription, setCurrentDescription] = useState(description);
-  const [loading, setLoading] = useState(true);
+export const CardDescriptionModal = ({
+  cardId,
+  description,
+  isOpen,
+  onClose,
+  onSave,
+}: Props) => {
+  const [currentDescription, setCurrentDescription] = useState(description ?? '');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
@@ -32,8 +33,9 @@ export const CardDescriptionModal = ({ cardId, description, isOpen, onClose, onS
         setLoading(true);
         setError(null);
         const task = await getTask(cardId);
-        setCurrentDescription(task.description || '');
+        setCurrentDescription(task?.description ?? '');
       } catch (err) {
+        console.error('Error fetching task description:', err);
         setError('Failed to load description. Please try again later.');
         setCurrentDescription('');
       } finally {
@@ -41,11 +43,14 @@ export const CardDescriptionModal = ({ cardId, description, isOpen, onClose, onS
       }
     };
 
-    if (isOpen && !description) {
-      fetchDescription();
-    } else {
-      setCurrentDescription(description);
-      setLoading(false);
+    if (isOpen) {
+      if (description === null) {
+        fetchDescription();
+      } else {
+        setCurrentDescription(description);
+        setLoading(false);
+        setError(null);
+      }
     }
   }, [cardId, isOpen, description]);
 
@@ -62,7 +67,7 @@ export const CardDescriptionModal = ({ cardId, description, isOpen, onClose, onS
           <p className="modal-error-text">{error}</p>
         ) : (
           <>
-            <label htmlFor="description-label">Description</label>
+            <label htmlFor="description-textarea">Description</label>
             <textarea
               id="description-textarea"
               name="description"
@@ -71,7 +76,9 @@ export const CardDescriptionModal = ({ cardId, description, isOpen, onClose, onS
               onChange={(e) => setCurrentDescription(e.target.value)}
             />
             <section className="modal-actions">
-              <button className="modal-actions-cancel" onClick={onClose}>Cancel</button>
+              <button className="modal-actions-cancel" onClick={onClose}>
+                Cancel
+              </button>
               <button
                 className="modal-actions-save"
                 onClick={() => {

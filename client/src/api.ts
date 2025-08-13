@@ -23,7 +23,7 @@ export const createTask = async (title: string, column: number, row: number) => 
 };
 
 // getTask
-export const getTask = async (id: number | string) => {
+export const getTask = async (id: number) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard/Get?id=${id}`);
   if (!response.ok) {
     const errorText = await response.text();
@@ -57,7 +57,7 @@ export const updateTask = async (task: {
 };
 
 // removeCard
-export const deleteTask = async (id: number | string) => {
+export const deleteTask = async (id: number) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard?id=${id}`, {
     method: 'DELETE',
   });
