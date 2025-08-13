@@ -20,7 +20,7 @@ export const List = ({ list }: Props) => {
 
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.CARD,
-    drop: (item: { id: string; listId: string }) => {
+    drop: (item: { id: number; listId: string }) => {
       if (item.listId !== list.id) {
         moveCard(item.id, item.listId, list.id);
       }
@@ -59,7 +59,7 @@ export const List = ({ list }: Props) => {
             key={card.id}
             card={card}
             listId={list.id}
-            onDelete={() => removeCard(list.id, card.id)}
+            onDelete={() => removeCard(card.id)}
           />
         ))}
       </ul>

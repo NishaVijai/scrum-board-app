@@ -5,16 +5,17 @@ import { createTask, updateTask, deleteTask, updateColumnsOrder, fetchTasks } fr
 interface BoardState {
   lists: List[];
   addCard: (listId: string, title: string) => Promise<void>;
-  updateCardDescription: (cardId: string, description: string) => Promise<void>;
-  moveCard: (cardId: string, fromListId: string, toListId: string) => Promise<void>;
-  removeCard: (listId: string, cardId: string) => Promise<void>;
+  updateCardTitle: (cardId: number, title: string) => Promise<void>;
+  updateCardDescription: (cardId: number, description: string) => Promise<void>;
+  moveCard: (cardId: number, fromListId: string, toListId: string) => Promise<void>;
+  removeCard: (cardId: number) => Promise<void>;
   moveList: (fromIndex: number, toIndex: number) => Promise<void>;
   loadTasksFromBackend: () => Promise<void>;
   setLists: (lists: List[]) => void;
 }
 
 interface BackendTask {
-  id: number | string;
+  id: number;
   title: string;
   description?: string | null;
   column: number;
@@ -24,17 +25,19 @@ interface BackendTask {
 export const useBoardStore = create<BoardState>((set, get) => {
   const loadListsFromStorage = () => {
     const savedLists = localStorage.getItem('boardLists');
-    return savedLists ? JSON.parse(savedLists) : [
-      { id: 'backlog', title: 'Backlog', cards: [] },
-      { id: 'todo', title: 'To Do', cards: [] },
-      { id: 'inprogress', title: 'In Progress', cards: [] },
-      { id: 'done', title: 'Done', cards: [] },
-    ];
+    return savedLists
+      ? JSON.parse(savedLists)
+      : [
+        { id: 'backlog', title: 'Backlog', cards: [] },
+        { id: 'todo', title: 'To Do', cards: [] },
+        { id: 'inprogress', title: 'In Progress', cards: [] },
+        { id: 'done', title: 'Done', cards: [] },
+      ];
   };
 
   const initialLists = loadListsFromStorage();
 
-  return ({
+  return {
     lists: initialLists,
 
     setLists: (lists) => {
@@ -52,82 +55,61 @@ export const useBoardStore = create<BoardState>((set, get) => {
         };
         const column = columnMap[listId] ?? 0;
 
-        const newTaskArray = await createTask(title, column, 0);
-        const newTask = newTaskArray[0];
+        const currentList = get().lists.find((l) => l.id === listId);
+        const row = currentList ? currentList.cards.length : 0;
+        await createTask(title, column, row);
 
-        set((state) => {
-          const list = state.lists.find((l) => l.id === listId);
-          if (!list) return state;
-
-          const newCard: Card = {
-            id: newTask.id.toString(),
-            // id: newTask?.id?.toString() ?? Date.now().toString(),
-            title: newTask?.title ?? title,
-            row: list.cards.length,
-          };
-
-          list.cards.push(newCard);
-          state.setLists(state.lists);
-
-          return { lists: [...state.lists] };
-        });
+        await get().loadTasksFromBackend();
       } catch (error) {
         console.error('Error adding card:', error);
       }
     },
 
-    updateCardDescription: async (cardId: string, description: string) => {
+    updateCardTitle: async (cardId, title) => {
       try {
         const tasks: BackendTask[] = await fetchTasks();
-        const task = tasks.find((t) => t.id.toString() === cardId);
+        const task = tasks.find((t) => t.id === cardId);
         if (!task) throw new Error('Task not found');
 
-        const updatedTask = {
-          ...task,
-          description,
-        };
-
+        const updatedTask = { ...task, title };
         await updateTask(updatedTask);
 
-        set((state) => {
-          const list = state.lists.find((l) => l.cards.some((c) => c.id === cardId));
-          if (list) {
-            const card = list.cards.find((c) => c.id === cardId);
-            if (card) {
-              card.description = description;
-            }
-          }
+        await get().loadTasksFromBackend();
+      } catch (error) {
+        console.error('Failed to update title:', error);
+      }
+    },
 
-          state.setLists(state.lists);
+    updateCardDescription: async (cardId, description) => {
+      try {
+        const tasks: BackendTask[] = await fetchTasks();
+        const task = tasks.find((t) => t.id === cardId);
 
-          return { lists: [...state.lists] };
-        });
+        if (!task) {
+          set((state) => {
+            const updatedLists = state.lists.map((l) => ({
+              ...l,
+              cards: l.cards.map((c) =>
+                c.id === cardId ? { ...c, description } : c
+              ),
+            }));
+            localStorage.setItem('boardLists', JSON.stringify(updatedLists));
+            return { lists: updatedLists };
+          });
+          return;
+        }
+
+        const updatedTask = { ...task, description };
+        await updateTask(updatedTask);
+
+        await get().loadTasksFromBackend();
       } catch (error) {
         console.error('Failed to update description:', error);
       }
     },
 
     moveCard: async (cardId, fromListId, toListId) => {
-      set((state) => {
-        const fromList = state.lists.find((l) => l.id === fromListId);
-        const toList = state.lists.find((l) => l.id === toListId);
-        if (!fromList || !toList) return state;
-
-        const card = fromList.cards.find((c) => c.id === cardId);
-        if (!card) return state;
-
-        fromList.cards = fromList.cards.filter((c) => c.id !== cardId);
-
-        card.row = toList.cards.length;
-        toList.cards.push(card);
-
-        state.setLists(state.lists);
-
-        return { lists: [...state.lists] };
-      });
-
       try {
-        const state = get();
         const columnMap: Record<string, number> = {
           backlog: 0,
           todo: 1,
@@ -135,73 +117,66 @@ export const useBoardStore = create<BoardState>((set, get) => {
           done: 3,
         };
 
-        const toList = state.lists.find((l) => l.id === toListId);
-        if (!toList) throw new Error('Destination list not found');
+        set((state) => {
+          const fromList = state.lists.find((l) => l.id === fromListId);
+          const toList = state.lists.find((l) => l.id === toListId);
+          if (!fromList || !toList) return state;
 
-        const column = columnMap[toListId] ?? 0;
+          const card = fromList.cards.find((c) => c.id === cardId);
+          if (!card) return state;
 
-        for (let i = 0; i < toList.cards.length; i++) {
-          const card = toList.cards[i];
-          await updateTask({
-            id: parseInt(card.id),
-            title: card.title,
-            column,
-            row: i,
-            description: card.description,
-          });
-        }
+          fromList.cards = fromList.cards.filter((c) => c.id !== cardId);
+          toList.cards.push(card);
 
-        const fromList = state.lists.find((l) => l.id === fromListId);
-        if (fromList) {
-          for (let i = 0; i < fromList.cards.length; i++) {
-            const card = fromList.cards[i];
+          return { lists: [...state.lists] };
+        });
+
+        const updateAllCards = async (listId: string, column: number) => {
+          const list = get().lists.find((l) => l.id === listId);
+          if (!list) return;
+
+          for (let i = 0; i < list.cards.length; i++) {
+            const card = list.cards[i];
             await updateTask({
-              id: parseInt(card.id),
+              id: card.id,
               title: card.title,
-              column: columnMap[fromListId] ?? 0,
+              column,
               row: i,
               description: card.description,
             });
           }
-        }
+        };
+
+        await updateAllCards(toListId, columnMap[toListId]);
+        await updateAllCards(fromListId, columnMap[fromListId]);
+
+        await get().loadTasksFromBackend();
       } catch (error) {
-        console.error('Failed to sync moved card with backend', error);
+        console.error('Failed to move card:', error);
       }
     },
 
-    removeCard: async (listId, cardId) => {
+    removeCard: async (cardId: number) => {
       try {
         await deleteTask(cardId);
-
-        set((state) => {
-          const list = state.lists.find((l) => l.id === listId);
-          if (!list) return state;
-          list.cards = list.cards.filter((c) => c.id !== cardId);
-
-          state.setLists(state.lists);
-
-          return { lists: [...state.lists] };
-        });
+        await get().loadTasksFromBackend();
       } catch (error) {
-        console.error('Failed to delete card from backend:', error);
+        console.error('Failed to delete card:', error);
       }
     },
 
     moveList: async (fromIndex, toIndex) => {
       try {
         set((state) => {
-          const updatedLists = Array.from(state.lists);
+          const updatedLists = [...state.lists];
           const [movedList] = updatedLists.splice(fromIndex, 1);
           updatedLists.splice(toIndex, 0, movedList);
-
-          state.setLists(updatedLists);
-
+          localStorage.setItem('boardLists', JSON.stringify(updatedLists));
           return { lists: updatedLists };
         });
 
         const orderedListIds = get().lists.map((list) => list.id);
         await updateColumnsOrder(orderedListIds);
-
       } catch (error) {
         console.error('Failed to sync list order with backend', error);
       }
@@ -211,47 +186,46 @@ export const useBoardStore = create<BoardState>((set, get) => {
       try {
         const tasks: BackendTask[] = await fetchTasks();
 
-        set((state) => {
-          const columnToListId: Record<number, string> = {
-            0: 'backlog',
-            1: 'todo',
-            2: 'inprogress',
-            3: 'done',
-          };
+        const columnToListId: Record<number, string> = {
+          0: 'backlog',
+          1: 'todo',
+          2: 'inprogress',
+          3: 'done',
+        };
 
-          const cardsByListId: Record<string, Card[]> = {
-            backlog: [],
-            todo: [],
-            inprogress: [],
-            done: [],
-          };
+        const cardsByListId: Record<string, Card[]> = {
+          backlog: [],
+          todo: [],
+          inprogress: [],
+          done: [],
+        };
 
-          tasks.forEach((task) => {
-            const listId = columnToListId[task.column] || 'backlog';
-            cardsByListId[listId].push({
-              id: task.id.toString(),
-              title: task.title,
-              row: task.row,
-              description: task.description || '',
-            });
+        tasks.forEach((task) => {
+          const listId = columnToListId[task.column] || 'backlog';
+          cardsByListId[listId].push({
+            id: task.id,
+            title: task.title,
+            row: task.row,
+            description: task.description ?? '',
           });
-
-          Object.keys(cardsByListId).forEach((key) => {
-            cardsByListId[key].sort((a, b) => a.row - b.row);
-          });
-
-          const updatedLists = state.lists.map((list) => ({
-            ...list,
-            cards: cardsByListId[list.id] || [],
-          }));
-
-          state.setLists(updatedLists);
-
-          return { lists: updatedLists };
         });
+
+        Object.keys(cardsByListId).forEach((key) => {
+          cardsByListId[key].sort((a, b) => a.row - b.row);
+        });
+
+        const updatedLists: List[] = [
+          { id: 'backlog', title: 'Backlog', cards: cardsByListId.backlog },
+          { id: 'todo', title: 'To Do', cards: cardsByListId.todo },
+          { id: 'inprogress', title: 'In Progress', cards: cardsByListId.inprogress },
+          { id: 'done', title: 'Done', cards: cardsByListId.done },
+        ];
+
+        set({ lists: updatedLists });
+        localStorage.setItem('boardLists', JSON.stringify(updatedLists));
       } catch (error) {
         console.error('Failed to load tasks from backend:', error);
       }
     },
-  });
+  };
 });
