@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Configure Services
+// ✅ Add Services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -16,6 +16,7 @@ var renderDbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
 if (!string.IsNullOrEmpty(renderDbUrl))
 {
+    // Parse Render PostgreSQL URL
     var databaseUri = new Uri(renderDbUrl);
     var userInfo = databaseUri.UserInfo.Split(':');
     var host = databaseUri.Host;
@@ -23,11 +24,12 @@ if (!string.IsNullOrEmpty(renderDbUrl))
     var username = userInfo[0];
     var password = userInfo[1];
     var database = databaseUri.AbsolutePath.TrimStart('/');
+
     connectionString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SSL Mode=Require;Trust Server Certificate=true";
 }
 else
 {
-    // Default to local development PostgreSQL
+    // Local development fallback
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
                        ?? "Host=localhost;Port=5432;Username=postgres;Password=yourpassword;Database=scrumboard_dev";
 }
@@ -54,24 +56,23 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ✅ Apply CORS Policy early
+// ✅ Apply CORS early
 app.UseCors("AllowReactApp");
-
-// ✅ Ensure DB is created and migrations applied automatically
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ScrumBoardContext>();
-    dbContext.Database.Migrate();
-}
 
 // ✅ Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // ✅ Optional: Auto-migrate locally only
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ScrumBoardContext>();
+        dbContext.Database.Migrate();
+    }
 }
 
-// app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
