@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Scrum_Board_Backend.Data;
 using Scrum_Board_Backend.Services;
 using Microsoft.AspNetCore.Builder;
@@ -9,9 +10,31 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// ✅ Configure PostgreSQL connection dynamically
+string connectionString;
+var renderDbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (!string.IsNullOrEmpty(renderDbUrl))
+{
+    var databaseUri = new Uri(renderDbUrl);
+    var userInfo = databaseUri.UserInfo.Split(':');
+    var host = databaseUri.Host;
+    var port = databaseUri.Port;
+    var username = userInfo[0];
+    var password = userInfo[1];
+    var database = databaseUri.AbsolutePath.TrimStart('/');
+    connectionString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SSL Mode=Require;Trust Server Certificate=true";
+}
+else
+{
+    // Default to local development PostgreSQL
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? "Host=localhost;Port=5432;Username=postgres;Password=yourpassword;Database=scrumboard_dev";
+}
+
 // ✅ Register DbContext & Services
-builder.Services.AddDbContext<ScrumBoardContext>();
-builder.Services.AddTransient<IScrumBoardContext, ScrumBoardContext>();
+builder.Services.AddDbContext<ScrumBoardContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddScoped<IScrumBoardContext>(provider => provider.GetRequiredService<ScrumBoardContext>());
 builder.Services.AddTransient<IScrumBoardService, ScrumBoardService>();
 
 // ✅ Configure CORS
@@ -31,14 +54,14 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ✅ Apply CORS Policy early to handle OPTIONS preflight
+// ✅ Apply CORS Policy early
 app.UseCors("AllowReactApp");
 
-// ✅ Ensure DB is created (best inside a scope)
+// ✅ Ensure DB is created and migrations applied automatically
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ScrumBoardContext>();
-    dbContext.Database.EnsureCreated();
+    dbContext.Database.Migrate();
 }
 
 // ✅ Middleware
@@ -48,10 +71,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
+// app.UseHttpsRedirection();
 app.UseAuthorization();
-
 app.MapControllers();
 
+// Run using ASPNETCORE_URLS from Docker / Render
 app.Run();

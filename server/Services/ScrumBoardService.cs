@@ -1,71 +1,47 @@
-﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Scrum_Board_Backend.Data;
 using Scrum_Board_Backend.Models;
 
 namespace Scrum_Board_Backend.Services
 {
-    public class ScrumBoardService(IScrumBoardContext context) : IScrumBoardService
+    public class ScrumBoardService : IScrumBoardService
     {
-        public async Task<(HttpStatusCode, int)> CreateTask(TaskEntity entity)
-        {
-            if (entity.Id != 0)
-            {
-                 throw new Exception("Tasks should not be created with an id.");
-            }
+        private readonly IScrumBoardContext _context;
 
-            context.Tasks.Add(entity);
-            await context.SaveChangesAsync();
-            return (HttpStatusCode.Created, entity.Id);
+        public ScrumBoardService(IScrumBoardContext context)
+        {
+            _context = context;
         }
 
-        public async Task<HttpStatusCode> DeleteTask(int id)
+        public async Task<List<TaskEntity>> GetAllTasksAsync()
         {
-            var entity = await context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
-
-            if (entity == null)
-            {
-                throw new Exception("No task with id " + id + " currently exists.");
-            }
-
-            context.Tasks.Remove(entity);
-            await context.SaveChangesAsync();
-            return HttpStatusCode.NoContent;
+            return await _context.Tasks.ToListAsync();
         }
 
-        public async Task<IEnumerable<TaskEntity>> GetAllTasks()
+        public async Task<TaskEntity?> GetTaskByIdAsync(int id)
         {
-            return await context.Tasks.ToArrayAsync();
+            return await _context.Tasks.FindAsync(id);
         }
 
-        public async Task<TaskEntity> GetTaskById(int id)
+        public async Task<TaskEntity> AddTaskAsync(TaskEntity task)
         {
-            var entity = await context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
-
-            if (entity == null)
-            {
-                throw new Exception("No task with id " + id + " currently exists.");
-            }
-
-            return entity;
+            _context.Tasks.Add(task);
+            await _context.SaveChangesAsync();
+            return task;
         }
 
-        public async Task<HttpStatusCode> UpdateTask(TaskEntity task)
+        public async Task<bool> UpdateTaskAsync(TaskEntity task)
         {
-            var entity = await context.Tasks.FirstOrDefaultAsync(t => t.Id == task.Id);
+            _context.Tasks.Update(task);
+            return await _context.SaveChangesAsync() > 0;
+        }
 
-            if (entity == null)
-            {
-                throw new Exception("No task with id " + task.Id + " currently exists.");
-            }
-
-            entity.Title = task.Title;
-            entity.Description = task.Description;
-            entity.Column = task.Column;
-            entity.Row = task.Row;
-
-            await context.SaveChangesAsync();
-            return HttpStatusCode.OK;
+        public async Task<bool> DeleteTaskAsync(int id)
+        {
+            var task = await _context.Tasks.FindAsync(id);
+            if (task == null) return false;
+            _context.Tasks.Remove(task);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

@@ -1,56 +1,58 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Scrum_Board_Backend.Models;
 using Scrum_Board_Backend.Services;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace Scrum_Board_Backend.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    [EnableCors("AllowReactApp")]
-    public class ScrumBoardController(IScrumBoardService scrumBoardService) : ControllerBase
+    [Route("api/[controller]")]
+    public class ScrumBoardController : ControllerBase
     {
-        // GET: api/<ScrumBoardController>
-        [HttpGet("GetAll")]
+        private readonly IScrumBoardService _service;
+
+        public ScrumBoardController(IScrumBoardService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
-            var result = await scrumBoardService.GetAllTasks();
-            return Ok(result);
+            var tasks = await _service.GetAllTasksAsync();
+            return Ok(tasks);
         }
 
-        // GET api/<ScrumBoardController>/5
-        [HttpGet("Get")]
-        public async Task<IActionResult> GetTask(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetTaskById(int id)
         {
-            var result = await scrumBoardService.GetTaskById(id);
-            return Ok(result);
+            var task = await _service.GetTaskByIdAsync(id);
+            if (task == null) return NotFound();
+            return Ok(task);
         }
 
-        // POST api/<ScrumBoardController>
-        [HttpPost("Update")]
-        public async Task<IActionResult> UpdateTask([FromBody] TaskEntity task)
-        {
-            var result = await scrumBoardService.UpdateTask(task);
-            return Ok(result);
-        }
-
-        // Post api/<ScrumBoardController>/5
-        [HttpPost("Create")]
+        [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] TaskEntity task)
         {
-            var result = await scrumBoardService.CreateTask(task);
-            return Ok(result);
+            var createdTask = await _service.AddTaskAsync(task);
+            return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
         }
 
-        // DELETE api/<ScrumBoardController>/5
-        [HttpDelete]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskEntity task)
+        {
+            if (id != task.Id) return BadRequest("Task ID mismatch");
+
+            var success = await _service.UpdateTaskAsync(task);
+            if (!success) return NotFound();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
-            var result = await scrumBoardService.DeleteTask(id);
-            return Ok(result);
+            var success = await _service.DeleteTaskAsync(id);
+            if (!success) return NotFound();
+            return NoContent();
         }
     }
 }
