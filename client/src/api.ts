@@ -17,7 +17,7 @@ export const createTask = async (title: string, column: number, row: number) => 
     throw new Error(`Failed to create task: ${response.status} ${response.statusText}`);
   }
 
-  return await response.json(); // returns the created task with MongoDB _id
+  return await response.json(); // returns the created task with MongoDB _id as string
 };
 
 // --------------------

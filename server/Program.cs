@@ -3,7 +3,7 @@ using Scrum_Board_Backend.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using DotNetEnv; // DotNetEnv for .env files
+using DotNetEnv;
 using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,25 +34,34 @@ builder.Services.AddSwaggerGen();
 // ================================
 // ✅ MongoDB Configuration
 // ================================
-// Values are read from environment variables
 builder.Services.AddSingleton<IScrumBoardContext, ScrumBoardContext>();
 builder.Services.AddScoped<IScrumBoardService, ScrumBoardService>();
 
 // ================================
-// ✅ Configure CORS (React Frontend)
+// ✅ Configure CORS
 // ================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        // Read CORS origins from environment variable if you want dynamic control
-        var origins = Environment.GetEnvironmentVariable("Cors__Origins__0") is string origin
-            ? new[] { origin }
-            : new[] { "http://localhost:5173", "https://scrum-board-app.onrender.com" };
+        // Read allowed origins from environment variable (semicolon-separated)
+        var allowedOriginsEnv = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS") ?? "";
+        var origins = allowedOriginsEnv.Split(';', StringSplitOptions.RemoveEmptyEntries);
+
+        // Fallback if env var is not set
+        if (origins.Length == 0)
+        {
+            origins = new[]
+            {
+                "http://localhost:5173",                // local dev
+                "https://scrum-board-app.onrender.com" // production frontend
+            };
+        }
 
         policy.WithOrigins(origins)
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // necessary if frontend sends cookies or auth headers
     });
 });
 
@@ -67,6 +76,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// CORS must be before UseAuthorization
 app.UseCors("AllowReactApp");
 
 app.UseAuthorization();
