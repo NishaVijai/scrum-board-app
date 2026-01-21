@@ -1,80 +1,76 @@
-using Microsoft.EntityFrameworkCore;
-using Scrum_Board_Backend.Data;
 using Scrum_Board_Backend.Services;
+using Scrum_Board_Backend.Data;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using DotNetEnv; // DotNetEnv for .env files
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Add Services
+// ================================
+// ✅ Load Environment Variables from .env files
+// ================================
+var environment = builder.Environment.EnvironmentName; // "Development" or "Production"
+var envFile = Path.Combine(builder.Environment.ContentRootPath, $".env.{environment.ToLower()}");
+
+if (File.Exists(envFile))
+{
+    DotNetEnv.Env.Load(envFile);
+    Console.WriteLine($"Loaded environment variables from: {envFile}");
+}
+else
+{
+    Console.WriteLine($"Environment file not found: {envFile}. Make sure .env.{environment.ToLower()} exists.");
+}
+
+// ================================
+// ✅ Add Controllers & Swagger
+// ================================
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ Configure PostgreSQL connection dynamically
-string connectionString;
-var renderDbUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+// ================================
+// ✅ MongoDB Configuration
+// ================================
+// Values are read from environment variables
+builder.Services.AddSingleton<IScrumBoardContext, ScrumBoardContext>();
+builder.Services.AddScoped<IScrumBoardService, ScrumBoardService>();
 
-if (!string.IsNullOrEmpty(renderDbUrl))
-{
-    // Parse Render PostgreSQL URL
-    var databaseUri = new Uri(renderDbUrl);
-    var userInfo = databaseUri.UserInfo.Split(':');
-    var host = databaseUri.Host;
-    var port = databaseUri.Port;
-    var username = userInfo[0];
-    var password = userInfo[1];
-    var database = databaseUri.AbsolutePath.TrimStart('/');
-
-    connectionString = $"Host={host};Port={port};Username={username};Password={password};Database={database};SSL Mode=Require;Trust Server Certificate=true";
-}
-else
-{
-    // Local development fallback
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                       ?? "Host=localhost;Port=5432;Username=postgres;Password=yourpassword;Database=scrumboard_dev";
-}
-
-// ✅ Register DbContext & Services
-builder.Services.AddDbContext<ScrumBoardContext>(options => options.UseNpgsql(connectionString));
-builder.Services.AddScoped<IScrumBoardContext>(provider => provider.GetRequiredService<ScrumBoardContext>());
-builder.Services.AddTransient<IScrumBoardService, ScrumBoardService>();
-
-// ✅ Configure CORS
+// ================================
+// ✅ Configure CORS (React Frontend)
+// ================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins(
-                "https://scrum-board-app.onrender.com",
-                "http://localhost:5173"
-              )
+        // Read CORS origins from environment variable if you want dynamic control
+        var origins = Environment.GetEnvironmentVariable("Cors__Origins__0") is string origin
+            ? new[] { origin }
+            : new[] { "http://localhost:5173", "https://scrum-board-app.onrender.com" };
+
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
 
-// ✅ Apply CORS early
-app.UseCors("AllowReactApp");
-
+// ================================
 // ✅ Middleware
+// ================================
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    // ✅ Optional: Auto-migrate locally only
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ScrumBoardContext>();
-        dbContext.Database.Migrate();
-    }
 }
 
+app.UseCors("AllowReactApp");
+
 app.UseAuthorization();
+
 app.MapControllers();
 
-// Run using ASPNETCORE_URLS from Docker / Render
 app.Run();

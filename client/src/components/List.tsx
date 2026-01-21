@@ -8,6 +8,11 @@ type Props = {
   list: ListType;
 };
 
+type DragItem = {
+  id: string; // updated to string
+  listId: string;
+};
+
 export const List = ({ list }: Props) => {
   const addCard = useBoardStore((s) => s.addCard);
   const removeCard = useBoardStore((s) => s.removeCard);
@@ -20,7 +25,7 @@ export const List = ({ list }: Props) => {
 
   const [{ isOver }, drop] = useDrop({
     accept: ItemTypes.CARD,
-    drop: (item: { id: number; listId: string }) => {
+    drop: (item: DragItem) => {
       if (item.listId !== list.id) {
         moveCard(item.id, item.listId, list.id);
       }

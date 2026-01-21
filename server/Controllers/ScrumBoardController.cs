@@ -23,7 +23,7 @@ namespace Scrum_Board_Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTaskById(int id)
+        public async Task<IActionResult> GetTaskById(string id)
         {
             var task = await _service.GetTaskByIdAsync(id);
             if (task == null) return NotFound();
@@ -38,20 +38,22 @@ namespace Scrum_Board_Backend.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskEntity task)
+        public async Task<IActionResult> UpdateTask(string id, [FromBody] TaskEntity task)
         {
             if (id != task.Id) return BadRequest("Task ID mismatch");
 
             var success = await _service.UpdateTaskAsync(task);
             if (!success) return NotFound();
+
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTask(int id)
+        public async Task<IActionResult> DeleteTask(string id)
         {
             var success = await _service.DeleteTaskAsync(id);
             if (!success) return NotFound();
+
             return NoContent();
         }
     }

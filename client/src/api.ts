@@ -1,16 +1,14 @@
-// const API_BASE = import.meta.env.VITE_API_URL;
+// src/api.ts
 const API_BASE = import.meta.env.VITE_API_URL.replace(/\/$/, '');
 
-// addCard
+// --------------------
+// Add a new task
+// --------------------
 export const createTask = async (title: string, column: number, row: number) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/Create`, {
+  const response = await fetch(`${API_BASE}/api/ScrumBoard`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      title,
-      column,
-      row,
-    }),
+    body: JSON.stringify({ title, column, row }),
   });
 
   if (!response.ok) {
@@ -19,12 +17,14 @@ export const createTask = async (title: string, column: number, row: number) => 
     throw new Error(`Failed to create task: ${response.status} ${response.statusText}`);
   }
 
-  return await response.json();
+  return await response.json(); // returns the created task with MongoDB _id
 };
 
-// getTask
-export const getTask = async (id: number) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/Get?id=${id}`);
+// --------------------
+// Get a task by ID
+// --------------------
+export const getTask = async (id: string) => {
+  const response = await fetch(`${API_BASE}/api/ScrumBoard/${id}`);
   if (!response.ok) {
     const errorText = await response.text();
     console.error("Get task API error:", errorText);
@@ -33,16 +33,18 @@ export const getTask = async (id: number) => {
   return await response.json();
 };
 
-// moveCard
+// --------------------
+// Update a task
+// --------------------
 export const updateTask = async (task: {
-  id: number;
+  id: string;
   title: string;
   column: number;
   row: number;
   description?: string | null;
 }) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/Update`, {
-    method: 'POST',
+  const response = await fetch(`${API_BASE}/api/ScrumBoard/${task.id}`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task),
   });
@@ -56,9 +58,11 @@ export const updateTask = async (task: {
   return await response.json();
 };
 
-// removeCard
-export const deleteTask = async (id: number) => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard?id=${id}`, {
+// --------------------
+// Delete a task
+// --------------------
+export const deleteTask = async (id: string) => {
+  const response = await fetch(`${API_BASE}/api/ScrumBoard/${id}`, {
     method: 'DELETE',
   });
 
@@ -71,7 +75,9 @@ export const deleteTask = async (id: number) => {
   return true;
 };
 
-// moveList
+// --------------------
+// Update column order (move lists)
+// --------------------
 export const updateColumnsOrder = async (orderedListIds: string[]) => {
   const response = await fetch(`${API_BASE}/api/ScrumBoard/UpdateColumnsOrder`, {
     method: 'POST',
@@ -88,19 +94,16 @@ export const updateColumnsOrder = async (orderedListIds: string[]) => {
   return await response.json();
 };
 
-// loadTasksFromBackend
+// --------------------
+// Fetch all tasks
+// --------------------
 export const fetchTasks = async () => {
-  const response = await fetch(`${API_BASE}/api/ScrumBoard/GetAll`);
+  const response = await fetch(`${API_BASE}/api/ScrumBoard`);
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("API error response:", errorText);
-    throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+    console.error("Fetch tasks API error:", errorText);
+    throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`);
   }
-  try {
-    return await response.json();
-  } catch (jsonError) {
-    const text = await response.text();
-    console.error("Invalid JSON from API:", text);
-    throw jsonError;
-  }
+
+  return await response.json(); // array of tasks with string IDs
 };

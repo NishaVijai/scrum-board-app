@@ -1,47 +1,63 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Scrum_Board_Backend.Data;
-using Scrum_Board_Backend.Models;
+﻿using Scrum_Board_Backend.Models;
+using MongoDB.Driver;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 namespace Scrum_Board_Backend.Services
 {
     public class ScrumBoardService : IScrumBoardService
     {
-        private readonly IScrumBoardContext _context;
+        private readonly IMongoCollection<TaskEntity> _tasks;
 
-        public ScrumBoardService(IScrumBoardContext context)
+        public ScrumBoardService()
         {
-            _context = context;
+            // Read MongoDB settings from environment variables
+            var connectionString = Environment.GetEnvironmentVariable("MongoDbSettings__ConnectionString");
+            var databaseName = Environment.GetEnvironmentVariable("MongoDbSettings__DatabaseName");
+
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentException("MongoDB connection string is missing. Set it in .env or environment variables.");
+
+            if (string.IsNullOrEmpty(databaseName))
+                throw new ArgumentException("MongoDB database name is missing. Set it in .env or environment variables.");
+
+            var client = new MongoClient(connectionString);
+            var database = client.GetDatabase(databaseName);
+            _tasks = database.GetCollection<TaskEntity>("Tasks");
         }
 
+        // Get all tasks
         public async Task<List<TaskEntity>> GetAllTasksAsync()
         {
-            return await _context.Tasks.ToListAsync();
+            return await _tasks.Find(task => true).ToListAsync();
         }
 
-        public async Task<TaskEntity?> GetTaskByIdAsync(int id)
+        // Get task by ID
+        public async Task<TaskEntity?> GetTaskByIdAsync(string id)
         {
-            return await _context.Tasks.FindAsync(id);
+            return await _tasks.Find(task => task.Id == id).FirstOrDefaultAsync();
         }
 
+        // Add a new task
         public async Task<TaskEntity> AddTaskAsync(TaskEntity task)
         {
-            _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
+            await _tasks.InsertOneAsync(task);
             return task;
         }
 
+        // Update an existing task
         public async Task<bool> UpdateTaskAsync(TaskEntity task)
         {
-            _context.Tasks.Update(task);
-            return await _context.SaveChangesAsync() > 0;
+            var result = await _tasks.ReplaceOneAsync(t => t.Id == task.Id, task);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
         }
 
-        public async Task<bool> DeleteTaskAsync(int id)
+        // Delete a task
+        public async Task<bool> DeleteTaskAsync(string id)
         {
-            var task = await _context.Tasks.FindAsync(id);
-            if (task == null) return false;
-            _context.Tasks.Remove(task);
-            return await _context.SaveChangesAsync() > 0;
+            var result = await _tasks.DeleteOneAsync(t => t.Id == id);
+            return result.IsAcknowledged && result.DeletedCount > 0;
         }
     }
 }

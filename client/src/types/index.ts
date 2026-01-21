@@ -1,5 +1,5 @@
 export type Card = {
-  id: number;
+  id: string; // changed from number to string
   title: string;
   row: number;
   description?: string | null;

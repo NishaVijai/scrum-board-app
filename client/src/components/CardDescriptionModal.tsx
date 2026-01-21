@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { getTask } from '../api';
 
 type Props = {
-  cardId: number;
+  cardId: string; // updated from number → string
   description: string | null;
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +20,7 @@ export const CardDescriptionModal = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Prevent background scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
@@ -27,6 +28,7 @@ export const CardDescriptionModal = ({
     };
   }, [isOpen]);
 
+  // Fetch latest description from backend if needed
   useEffect(() => {
     const fetchDescription = async () => {
       try {

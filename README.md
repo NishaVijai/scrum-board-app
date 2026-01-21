@@ -73,6 +73,8 @@ dotnet run
 server:
 http://localhost:5203/api/ScrumBoard/getall
 
+http://localhost:5203/swagger
+
 
 IV)
 production test:
@@ -81,3 +83,11 @@ https://scrum-board-app.onrender.com/
 
 server:
 https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard/getall
+
+
+SERVER:
+
+MongoDB
+
+-cd server
+dotnet add package MongoDB.Driver

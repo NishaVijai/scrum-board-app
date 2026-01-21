@@ -16,13 +16,13 @@ export const Card = forwardRef<HTMLLIElement, Props>(({ card, listId, onDelete }
   const updateDescription = useBoardStore((s) => s.updateCardDescription);
 
   const handleSave = async (newDescription: string) => {
-    await updateDescription(card.id, newDescription);
+    await updateDescription(card.id, newDescription); // card.id is now string
     setDescription(newDescription);
   };
 
   const [{ isDragging }, drag] = useDrag({
     type: ItemTypes.CARD,
-    item: { id: card.id, listId },
+    item: { id: card.id, listId }, // card.id is string
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -64,7 +64,7 @@ export const Card = forwardRef<HTMLLIElement, Props>(({ card, listId, onDelete }
       </li>
 
       <CardDescriptionModal
-        cardId={card.id}
+        cardId={card.id} // now string
         description={description}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

@@ -5,9 +5,9 @@ namespace Scrum_Board_Backend.Services
     public interface IScrumBoardService
     {
         Task<List<TaskEntity>> GetAllTasksAsync();
-        Task<TaskEntity?> GetTaskByIdAsync(int id);
+        Task<TaskEntity?> GetTaskByIdAsync(string id);
         Task<TaskEntity> AddTaskAsync(TaskEntity task);
         Task<bool> UpdateTaskAsync(TaskEntity task);
-        Task<bool> DeleteTaskAsync(int id);
+        Task<bool> DeleteTaskAsync(string id);
     }
 }

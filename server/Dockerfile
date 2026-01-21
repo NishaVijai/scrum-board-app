@@ -2,12 +2,16 @@
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 
-# Create a non-root user for security
+# Create a non-root user
 RUN adduser --disabled-password --home /app appuser && chown -R appuser /app
 
-# Use $PORT if provided (Render sets it automatically), otherwise default to 8080
+# Expose port and configure ASP.NET Core
 ENV PORT=8080
 ENV ASPNETCORE_URLS=http://+:${PORT}
+
+# Optional MongoDB environment variables (override on Render)
+ENV MONGODB_URI=""
+ENV MONGODB_DB="scrum-board"
 
 EXPOSE 8080
 
@@ -18,13 +22,10 @@ WORKDIR /src
 
 # Copy csproj and restore
 COPY ["ScrumBoardBackend.csproj", "."]
-
 RUN dotnet restore "./ScrumBoardBackend.csproj"
 
-# Copy the rest of the source
+# Copy rest of the source and build
 COPY . .
-
-# Build
 RUN dotnet build "./ScrumBoardBackend.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish
@@ -37,7 +38,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Ensure app runs as non-root
+# Run as non-root
 USER appuser
 
 # Start application

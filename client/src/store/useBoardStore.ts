@@ -5,17 +5,17 @@ import { createTask, updateTask, deleteTask, updateColumnsOrder, fetchTasks } fr
 interface BoardState {
   lists: List[];
   addCard: (listId: string, title: string) => Promise<void>;
-  updateCardTitle: (cardId: number, title: string) => Promise<void>;
-  updateCardDescription: (cardId: number, description: string) => Promise<void>;
-  moveCard: (cardId: number, fromListId: string, toListId: string) => Promise<void>;
-  removeCard: (cardId: number) => Promise<void>;
+  updateCardTitle: (cardId: string, title: string) => Promise<void>;
+  updateCardDescription: (cardId: string, description: string) => Promise<void>;
+  moveCard: (cardId: string, fromListId: string, toListId: string) => Promise<void>;
+  removeCard: (cardId: string) => Promise<void>;
   moveList: (fromIndex: number, toIndex: number) => Promise<void>;
   loadTasksFromBackend: () => Promise<void>;
   setLists: (lists: List[]) => void;
 }
 
 interface BackendTask {
-  id: number;
+  id: string; // MongoDB ObjectId
   title: string;
   description?: string | null;
   column: number;
@@ -57,8 +57,8 @@ export const useBoardStore = create<BoardState>((set, get) => {
 
         const currentList = get().lists.find((l) => l.id === listId);
         const row = currentList ? currentList.cards.length : 0;
-        await createTask(title, column, row);
 
+        await createTask(title, column, row); // backend generates MongoDB _id
         await get().loadTasksFromBackend();
       } catch (error) {
         console.error('Error adding card:', error);
@@ -86,6 +86,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
         const task = tasks.find((t) => t.id === cardId);
 
         if (!task) {
+          // fallback: update local state only
           set((state) => {
             const updatedLists = state.lists.map((l) => ({
               ...l,
@@ -131,6 +132,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
           return { lists: [...state.lists] };
         });
 
+        // Update backend task positions
         const updateAllCards = async (listId: string, column: number) => {
           const list = get().lists.find((l) => l.id === listId);
           if (!list) return;
@@ -156,7 +158,7 @@ export const useBoardStore = create<BoardState>((set, get) => {
       }
     },
 
-    removeCard: async (cardId: number) => {
+    removeCard: async (cardId: string) => {
       try {
         await deleteTask(cardId);
         await get().loadTasksFromBackend();
