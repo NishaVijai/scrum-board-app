@@ -44,24 +44,22 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        // Read allowed origins from environment variable (semicolon-separated)
         var allowedOriginsEnv = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS") ?? "";
         var origins = allowedOriginsEnv.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
-        // Fallback if env var is not set
         if (origins.Length == 0)
         {
             origins = new[]
             {
-                "http://localhost:5173",                // local dev
-                "https://scrum-board-app.onrender.com" // production frontend
+                "http://localhost:5173",
+                "https://scrum-board-app.onrender.com"
             };
         }
 
         policy.WithOrigins(origins)
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); // necessary if frontend sends cookies or auth headers
+              .AllowAnyMethod();
+              // ❌ REMOVE AllowCredentials
     });
 });
 
