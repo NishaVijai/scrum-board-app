@@ -67,11 +67,15 @@ http://localhost:5173/
 On another terminal,
 cd server
 dotnet restore
+
+dotnet clean
+
 dotnet build
 dotnet run
 
 server:
-http://localhost:5203/api/ScrumBoard/getall
+http://localhost:5203/api/ScrumBoard
+
 
 http://localhost:5203/swagger
 
@@ -82,7 +86,7 @@ client:
 https://scrum-board-app.onrender.com/
 
 server:
-https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard/getall
+https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard
 
 
 SERVER:
