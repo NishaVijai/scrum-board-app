@@ -2,10 +2,10 @@
 Project management tool - web app
 
 ## Preview
-
+https://scrum-board-app.onrender.com/
 
 ### Screenshot
-
+<img width="3840" height="2070" alt="Scrum Board Web App" src="https://github.com/user-attachments/assets/a04a0e9b-da75-43a9-bbc2-3455db88464b" />
 
 ### To run on local system
 I)
