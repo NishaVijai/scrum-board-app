@@ -3,6 +3,7 @@ A web-based project management tool for managing tasks using the Scrum methodolo
 
 ## Table of Contents
 - [Preview](#preview)
+- [Screenshot](#screenshot)
 - [Features](#features)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
@@ -18,9 +19,9 @@ A web-based project management tool for managing tasks using the Scrum methodolo
 ---
 
 ## Preview
-[Live Demo](https://scrum-board-app.onrender.com/)
+[https://scrum-board-app.onrender.com/](https://scrum-board-app.onrender.com/)
 
-### Screenshot
+## Screenshot
 <img width="3840" height="2070" alt="Scrum Board Web App" src="https://github.com/user-attachments/assets/a04a0e9b-da75-43a9-bbc2-3455db88464b" />
 
 ---
