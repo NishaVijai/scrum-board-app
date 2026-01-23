@@ -74,6 +74,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
+// ✅ REQUIRED for CORS to work with controllers
+app.UseRouting();
+
 // CORS must be before UseAuthorization
 app.UseCors("AllowReactApp");
 

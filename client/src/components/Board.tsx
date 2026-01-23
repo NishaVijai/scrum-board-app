@@ -28,13 +28,15 @@ export const Board = () => {
             First load may take a bit — the server is waking up ☕
           </p>
         )}
+
+        {error && <p className="error">{error}</p>}
       </section>
     );
   }
 
-  if (error) {
-    return <p className="error">{error}</p>;
-  }
+  // if (error) {
+  //   return <p className="error">{error}</p>;
+  // }
 
   return (
     <DndProvider backend={HTML5Backend}>
