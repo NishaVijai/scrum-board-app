@@ -115,6 +115,7 @@ dotnet run
 
 * API URL: [http://localhost:5203/api/ScrumBoard](http://localhost:5203/api/ScrumBoard)
 * Swagger UI: [http://localhost:5203/swagger](http://localhost:5203/swagger)
+* Health check: [http://localhost:5203/api/health](http://localhost:5203/api/health)
 
 ---
 

@@ -6,12 +6,35 @@ import { useBoardStore } from '../store/useBoardStore';
 import { type List as ListType } from '../types';
 
 export const Board = () => {
-  const lists = useBoardStore((state) => state.lists);
-  const loadTasksFromBackend = useBoardStore((state) => state.loadTasksFromBackend);
+  const {
+    lists,
+    isLoading,
+    hasColdStartDelay,
+    error,
+    loadTasksFromBackend,
+  } = useBoardStore();
 
   useEffect(() => {
     loadTasksFromBackend();
   }, [loadTasksFromBackend]);
+
+  if (isLoading) {
+    return (
+      <section className="board-loading">
+        <p>Loading your tasks…</p>
+
+        {hasColdStartDelay && (
+          <p className="cold-start-tip">
+            First load may take a bit — the server is waking up ☕
+          </p>
+        )}
+      </section>
+    );
+  }
+
+  if (error) {
+    return <p className="error">{error}</p>;
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>

@@ -12,6 +12,10 @@ body {
   min-height: 100vh;
 }
 
+body {
+  font-size: 16px;
+}
+
 ul {
   list-style: none;
 }
@@ -74,18 +78,46 @@ footer {
   align-items: center;
   justify-content: center;
   gap: var(--gap);
-  font-size: 1rem;
+  font-size: 1.2rem;
   height: var(--footer-height);
   padding: 0 var(--gap);
 }
 
 .board-lists {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* grid-template-columns: repeat(4, 1fr); */
+  /* grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); */
+  /* grid-template-columns: repeat(
+    auto-fit,
+    minmax(260px, 300px)
+  ); */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(260px, 360px)
+  );
   grid-gap: var(--gap);
+  justify-content: center;
+  font-size: 1.2rem;
   width: 100%;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
+}
+
+.board-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--card-bg);
+  font-size: 1.4rem;
+  /* text-align: center; */
+  height: 100%;
+  width: 100%;
+}
+
+.cold-start-tip {
+  color: var(--card-bg);
+  font-size: 1.4rem;
 }
 
 a {
@@ -119,6 +151,7 @@ a:hover {
   border-radius: var(--border-radius);
   height: max-content;
   width: 100%;
+  /* min-width: 350px; */
 }
 
 .list-header {
@@ -138,12 +171,15 @@ a:hover {
   background: var(--card-bg);
   border-radius: var(--border-radius);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: var(--gap);
   margin-bottom: var(--gap);
 }
 
 .list-items li:last-child {
-  margin-bottom: 0;
+  /* margin-bottom: 0; */
 }
 
 .add-card {
@@ -157,14 +193,19 @@ a:hover {
 .add-card input {
   border-radius: var(--border-radius);
   box-shadow: 0 1px 1px rgba(233, 231, 231, 0.1);
-  font-size: 1rem;
-  padding: var(--gap);
+  /* font-size: 1rem; */
+  font-size: 1.2rem;
+  /* padding: var(--gap); */
+  height: 70px;
+  /* height: 50px; */
+  padding: 0.5rem;
 }
 
 .add-a-card-button button {
   border: var(--border-transparent);
   background-color: transparent;
-  font-size: 1rem;
+  /* font-size: 1rem; */
+  font-size: 1.2rem;
   padding: var(--gap);
   text-align: left;
   width: 100%;
@@ -184,6 +225,7 @@ a:hover {
   border-radius: var(--border-radius);
   color: var(--card-bg);
   cursor: pointer;
+  font-size: 1.2rem;
   padding: var(--gap);
 }
 
@@ -203,8 +245,11 @@ a:hover {
   border-radius: var(--rounded-border);
   color: var(--card-bg);
   cursor: pointer;
-  height: 2rem;
-  width: 2rem;
+  font-size: 1.2rem;
+  height: 40px;
+  width: 40px;
+  /* height: 2rem;
+  width: 2rem; */
 }
 
 .card-item:focus,
@@ -252,7 +297,8 @@ a:hover {
 
 .modal-content textarea {
   font-family: inherit;
-  font-size: 1.1rem;
+  /* font-size: 1.1rem; */
+  font-size: 1.2rem;
   padding: 0.5rem;
   height: 50%;
   width: 100%;
@@ -271,7 +317,8 @@ a:hover {
   border-radius: var(--border-radius);
   color: var(--card-bg);
   cursor: pointer;
-  font-size: 0.9rem;
+  /* font-size: 0.9rem; */
+  font-size: 1.2rem;
   padding: var(--gap);
   width: 500px;
   transition: var(--transition-all-property);
@@ -295,6 +342,10 @@ a:hover {
 
 /* Responsive mobile-first */
 @media (max-width: 600px) {
+  main {
+    padding: var(--gap);
+  }
+
   .board-lists {
     display: grid;
     grid-template-columns: 1fr;
@@ -303,6 +354,12 @@ a:hover {
   footer {
     display: flex;
     flex-wrap: wrap;
+  }
+
+  .footer-made-by-text {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .add-card {
@@ -315,5 +372,17 @@ a:hover {
     height: 50%;
     width: 400px;
     max-width: 90%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .board-lists {
+    grid-template-columns: repeat(4, 1fr);
+    /* max-width: 1400px; */
+    max-width: 1200px;
+  }
+
+  .list {
+    min-width: 350px;
   }
 }
