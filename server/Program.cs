@@ -76,14 +76,24 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// ✅ REQUIRED for CORS to work with controllers
+// Handle preflight explicitly (optional but recommended)
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == HttpMethods.Options)
+    {
+        context.Response.StatusCode = 200;
+        return;
+    }
+    await next();
+});
+
 app.UseRouting();
 
-// CORS must be before UseAuthorization
 app.UseCors("AllowReactApp");
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers()
+   .RequireCors("AllowReactApp");
 
 app.Run();
