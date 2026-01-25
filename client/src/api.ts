@@ -14,7 +14,7 @@ const request = async <T>(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("API error:", errorText);
+    console.error('API error:', errorText);
     throw new Error(`${response.status} ${response.statusText}`);
   }
 
@@ -27,7 +27,7 @@ const request = async <T>(
 };
 
 // --------------------
-// Task type
+// Task DTO
 // --------------------
 export interface TaskDto {
   id: string;
@@ -44,57 +44,66 @@ export const createTask = async (
   title: string,
   column: number,
   row: number
-): Promise<TaskDto> => {
-  return request<TaskDto>(BASE_URL, {
+): Promise<TaskDto> =>
+  request<TaskDto>(BASE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ title, column, row }),
   });
-};
 
 // --------------------
 // Get a task by ID
 // --------------------
-export const getTask = async (id: string): Promise<TaskDto> => {
-  return request<TaskDto>(`${BASE_URL}/${id}`);
-};
+export const getTask = async (id: string): Promise<TaskDto> =>
+  request<TaskDto>(`${BASE_URL}/${id}`);
 
 // --------------------
 // Fetch all tasks
 // --------------------
-export const fetchTasks = async (): Promise<TaskDto[]> => {
-  return request<TaskDto[]>(BASE_URL);
-};
+export const fetchTasks = async (): Promise<TaskDto[]> =>
+  request<TaskDto[]>(BASE_URL);
 
 // --------------------
 // Update a task
 // --------------------
-export const updateTask = async (task: TaskDto): Promise<void> => {
-  await request<void>(`${BASE_URL}/${task.id}`, {
+export const updateTask = async (task: TaskDto): Promise<void> =>
+  request<void>(`${BASE_URL}/${task.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(task),
   });
-};
 
 // --------------------
 // Delete a task
 // --------------------
-export const deleteTask = async (id: string): Promise<void> => {
-  await request<void>(`${BASE_URL}/${id}`, {
+export const deleteTask = async (id: string): Promise<void> =>
+  request<void>(`${BASE_URL}/${id}`, {
     method: 'DELETE',
   });
-};
 
 // --------------------
-// Update column order (if backend exists)
+// Update column order
 // --------------------
 export const updateColumnsOrder = async (
   orderedListIds: string[]
-): Promise<void> => {
-  await request<void>(`${BASE_URL}/UpdateColumnsOrder`, {
+): Promise<void> =>
+  request<void>(`${BASE_URL}/UpdateColumnsOrder`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ orderedListIds }),
   });
+
+// --------------------
+// Ping health endpoint (wake backend)
+// --------------------
+export const pingHealth = async (): Promise<void> => {
+  // Intentionally fire-and-forget:
+  // - Render backend wakes up
+  // - CORS blocks response access (expected)
+  // - No logging to avoid noisy dev console
+  try {
+    await fetch(`${API_BASE}/api/health`, { mode: 'no-cors' });
+  } catch {
+    // intentionally ignored
+  }
 };

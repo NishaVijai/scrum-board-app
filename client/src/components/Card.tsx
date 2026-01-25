@@ -1,77 +1,51 @@
-import { useState, forwardRef, useEffect } from 'react';
-import { useDrag } from 'react-dnd';
-import { ItemTypes, type Card as CardType } from '../types';
+// src/components/Card.tsx
+import { useState } from 'react';
+import { type Card as CardType } from '../types';
 import { CardDescriptionModal } from './CardDescriptionModal';
 import { useBoardStore } from '../store/useBoardStore';
 
 type Props = {
   card: CardType;
-  listId: string;
   onDelete?: () => void;
 };
 
-export const Card = forwardRef<HTMLLIElement, Props>(({ card, listId, onDelete }, ref) => {
+export const Card = ({ card, onDelete }: Props) => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [description, setDescription] = useState(card.description || '');
-  const updateDescription = useBoardStore((s) => s.updateCardDescription);
 
-  const handleSave = async (newDescription: string) => {
-    await updateDescription(card.id, newDescription); // card.id is now string
-    setDescription(newDescription);
-  };
-
-  const [{ isDragging }, drag] = useDrag({
-    type: ItemTypes.CARD,
-    item: { id: card.id, listId }, // card.id is string
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  useEffect(() => {
-    setDescription(card.description || '');
-  }, [card.description]);
+  const updateDescription = useBoardStore(
+    (s) => s.updateCardDescription
+  );
 
   return (
     <>
-      <li
-        onClick={() => setModalOpen(true)}
-        ref={(node) => {
-          drag(node);
-          if (typeof ref === 'function') ref(node);
-          if (ref && 'current' in ref) ref.current = node;
-        }}
+      <div
         className="card-item"
-        style={{
-          opacity: isDragging ? 0.5 : 1,
-          cursor: 'pointer',
-        }}
+        onClick={() => setModalOpen(true)}
       >
         <span>{card.title}</span>
+
         {onDelete && (
           <button
             type="button"
             className="card-delete-btn"
+            onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               onDelete();
             }}
-            aria-label={`Delete card ${card.title}`}
           >
             ✕
           </button>
         )}
-      </li>
+      </div>
 
       <CardDescriptionModal
-        cardId={card.id} // now string
-        description={description}
+        cardId={card.id}
+        description={card.description ?? ''}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSave={handleSave}
+        onSave={(desc) => updateDescription(card.id, desc)}
       />
     </>
   );
-});
-
-Card.displayName = 'Card';
+};

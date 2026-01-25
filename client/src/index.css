@@ -50,7 +50,7 @@ body {
   color: var(--text-color);
   font-family: Arial, sans-serif;
   overflow: hidden;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 
 #root {
@@ -237,6 +237,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   transition: var(--transition-all-property);
+  width: 100%;
 }
 
 .card-item button {

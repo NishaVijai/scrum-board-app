@@ -123,6 +123,7 @@ dotnet run
 
 **Frontend:** [https://scrum-board-app.onrender.com/](https://scrum-board-app.onrender.com/)
 **Backend API:** [https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard](https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard)
+**Backend Health Check:** [https://scrum-board-app-backend-api.onrender.com/api/health](https://scrum-board-app-backend-api.onrender.com/api/health)
 
 ---
 

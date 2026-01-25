@@ -9,43 +9,43 @@ using System.IO;
 var builder = WebApplication.CreateBuilder(args);
 
 // ================================
-// ✅ Load Environment Variables from .env files
+// Load Environment Variables
 // ================================
-var environment = builder.Environment.EnvironmentName; // "Development" or "Production"
-var envFile = Path.Combine(builder.Environment.ContentRootPath, $".env.{environment.ToLower()}");
+var environment = builder.Environment.EnvironmentName;
+var envFile = Path.Combine(
+    builder.Environment.ContentRootPath,
+    $".env.{environment.ToLower()}"
+);
 
 if (File.Exists(envFile))
 {
     DotNetEnv.Env.Load(envFile);
     Console.WriteLine($"Loaded environment variables from: {envFile}");
 }
-else
-{
-    Console.WriteLine($"Environment file not found: {envFile}. Make sure .env.{environment.ToLower()} exists.");
-}
 
 // ================================
-// ✅ Add Controllers & Swagger
+// Services
 // ================================
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ================================
-// ✅ MongoDB Configuration
-// ================================
+// MongoDB
 builder.Services.AddSingleton<IScrumBoardContext, ScrumBoardContext>();
 builder.Services.AddScoped<IScrumBoardService, ScrumBoardService>();
 
 // ================================
-// ✅ Configure CORS
+// CORS
 // ================================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        var allowedOriginsEnv = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS") ?? "";
-        var origins = allowedOriginsEnv.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        var allowedOriginsEnv =
+            Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS") ?? "";
+
+        var origins = allowedOriginsEnv
+            .Split(';', StringSplitOptions.RemoveEmptyEntries);
 
         if (origins.Length == 0)
         {
@@ -56,17 +56,17 @@ builder.Services.AddCors(options =>
             };
         }
 
-        policy.WithOrigins(origins)
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-              // ❌ REMOVE AllowCredentials
+        policy
+            .WithOrigins(origins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
 
 // ================================
-// ✅ Middleware
+// Middleware (ORDER MATTERS)
 // ================================
 if (app.Environment.IsDevelopment())
 {
@@ -76,24 +76,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Handle preflight explicitly (optional but recommended)
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == HttpMethods.Options)
-    {
-        context.Response.StatusCode = 200;
-        return;
-    }
-    await next();
-});
-
 app.UseRouting();
 
+// ✅ CORS MUST be here
 app.UseCors("AllowReactApp");
 
 app.UseAuthorization();
 
-app.MapControllers()
-   .RequireCors("AllowReactApp");
+app.MapControllers();
 
 app.Run();
