@@ -13,6 +13,11 @@ A web-based project management tool for managing tasks using the Scrum methodolo
     - [Step III: Running Locally](#step-iii-running-locally)
     - [Step IV: Production URLs](#step-iv-production-urls)
   - [Server Setup with MongoDB](#server-setup-with-mongodb)
+- [Architecture Overview](#architecture-overview)
+- [Drag & Drop Behavior](#drag--drop-behavior)
+- [Cold Start & Performance Notes](#cold-start--performance-notes)
+- [CORS Configuration](#cors-configuration)
+- [Example Tasks](#example-tasks)
 - [Tech Stack](#tech-stack)
 - [License](#license)
 
@@ -29,9 +34,12 @@ A web-based project management tool for managing tasks using the Scrum methodolo
 ## Features
 - Create, update, and delete tasks
 - Drag and drop tasks between columns
+- Reorder tasks within the same column
+- Optimistic UI updates for smooth drag experience
 - Track progress in a Scrum board
 - Backend powered by .NET and MongoDB
 - Frontend built with modern web technologies
+- Deployed on Render (frontend + backend)
 
 ---
 
@@ -121,9 +129,14 @@ dotnet run
 
 #### Step IV: Production URLs
 
-**Frontend:** [https://scrum-board-app.onrender.com/](https://scrum-board-app.onrender.com/)
-**Backend API:** [https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard](https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard)
-**Backend Health Check:** [https://scrum-board-app-backend-api.onrender.com/api/health](https://scrum-board-app-backend-api.onrender.com/api/health)
+**Frontend:**
+[https://scrum-board-app.onrender.com/](https://scrum-board-app.onrender.com/)
+
+**Backend API:**
+[https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard](https://scrum-board-app-backend-api.onrender.com/api/ScrumBoard)
+
+**Backend Health Check:**
+[https://scrum-board-app-backend-api.onrender.com/api/health](https://scrum-board-app-backend-api.onrender.com/api/health)
 
 ---
 
@@ -138,11 +151,89 @@ dotnet add package MongoDB.Driver
 
 ---
 
+## Architecture Overview
+
+* **Frontend**
+
+  * React + TypeScript (Vite)
+  * Zustand for state management
+  * React DnD for drag-and-drop
+  * Optimistic UI updates for instant feedback
+
+* **Backend**
+
+  * ASP.NET Core Web API
+  * MongoDB for persistence
+  * REST-based API design
+
+* **Hosting**
+
+  * Render (Frontend + Backend)
+  * MongoDB hosted externally
+
+---
+
+## Drag & Drop Behavior
+
+* Cards can be:
+
+  * Reordered within the same column
+  * Moved across different columns
+  * Dragging updates the UI optimistically
+  * Card positions are persisted using `row` indexes
+  * Hover position is calculated based on DOM element midpoints
+  * Backend updates are batched safely to avoid request flooding
+
+---
+
+## Cold Start & Performance Notes
+
+* Backend is hosted on Render and may experience **cold start delays**
+* A health check endpoint is used to warm up the API
+* First interaction may take a few seconds; subsequent actions are fast
+* Optimistic UI ensures drag interactions feel instant even during backend latency
+
+---
+
+## CORS Configuration
+
+* Backend CORS is configured to allow:
+
+  * `http://localhost:5173` (local development)
+  * `https://scrum-board-app.onrender.com` (production frontend)
+* CORS middleware is applied globally before routing
+* Preflight (`OPTIONS`) requests are handled automatically by ASP.NET Core
+
+---
+
+## Example Tasks
+
+Some casual tasks you can use to test the board:
+
+* Buy groceries
+* Reply to emails
+* Fix a small bug
+* Write documentation
+* Clean workspace
+* Plan weekend trip
+* Drag me around
+* Delete me later
+
+These are useful for testing:
+
+* Drag & drop
+* Reordering
+* Persistence after refresh
+
+---
+
 ## Tech Stack
 
-* **Frontend:** Vite, React
-* **Backend:** .NET 7
+* **Frontend:** Vite, React, TypeScript
+* **Backend:** .NET 7 (ASP.NET Core)
 * **Database:** MongoDB
+* **State Management:** Zustand
+* **Drag & Drop:** React DnD
 * **Hosting:** Render (Frontend & Backend)
 
 ---
