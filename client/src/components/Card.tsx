@@ -11,10 +11,21 @@ type Props = {
 
 export const Card = ({ card, onDelete }: Props) => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const updateDescription = useBoardStore(
     (s) => s.updateCardDescription
   );
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDeleteOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setConfirmDeleteOpen(false);
+    onDelete?.();
+  };
 
   return (
     <>
@@ -29,16 +40,14 @@ export const Card = ({ card, onDelete }: Props) => {
             type="button"
             className="card-delete-btn"
             onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
+            onClick={handleDeleteClick}
           >
             ✕
           </button>
         )}
       </div>
 
+      {/* Card description modal */}
       <CardDescriptionModal
         cardId={card.id}
         description={card.description ?? ''}
@@ -46,6 +55,37 @@ export const Card = ({ card, onDelete }: Props) => {
         onClose={() => setModalOpen(false)}
         onSave={(desc) => updateDescription(card.id, desc)}
       />
+
+      {/* Delete confirmation modal */}
+      {confirmDeleteOpen && (
+        <div
+          className="modal-overlay"
+          onClick={() => setConfirmDeleteOpen(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Delete card?</h2>
+            <p>Are you sure you want to delete this card?</p>
+
+            <div className="modal-actions">
+              <button
+                className="modal-actions-cancel"
+                onClick={() => setConfirmDeleteOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-actions-save"
+                onClick={handleConfirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

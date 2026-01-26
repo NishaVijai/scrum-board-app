@@ -6,20 +6,6 @@
   padding: 0;
 }
 
-html,
-body {
-  height: 100%;
-  min-height: 100vh;
-}
-
-body {
-  font-size: 16px;
-}
-
-ul {
-  list-style: none;
-}
-
 :root {
   --appbar-bg: #384b58;
   --board-bg: #0079bf;
@@ -33,31 +19,52 @@ ul {
   --button-bg-transition: #4c6aa9;
   --button-border-color: #072057;
 
-  --border-transparent: 2px solid transparent;
+  --border-transparent: 0.125rem solid transparent;
 
   --transition-all-property: all 0.2s ease-in-out;
 
   --border-radius: 0.3rem;
   --rounded-border: 50%;
-  --list-width: 280px;
+  --list-width: 17.5rem;
   --gap: 1rem;
-  --header-height: 150px;
-  --footer-height: 100px;
+
+  /* Use min-height instead of fixed height for zoom safety */
+  --header-min-height: 9.375rem;
+  --footer-min-height: 6.25rem;
+}
+
+/* --------------------------------------------------
+   ROOT FONT SCALING
+   -------------------------------------------------- */
+/* 100% respects browser/user font settings & zoom */
+html {
+  font-size: 100%;
+  height: 100%;
+  min-height: 100vh;
 }
 
 body {
+  min-height: 100vh;
   background-color: var(--appbar-bg);
   color: var(--text-color);
   font-family: Arial, sans-serif;
-  overflow: hidden;
-  overflow-y: scroll;
+  line-height: 1.5;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
+ul {
+  list-style: none;
+}
+
+/* --------------------------------------------------
+   LAYOUT
+   -------------------------------------------------- */
 #root {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: var(--header-height) auto var(--footer-height);
-  height: 100vh;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
 }
 
 header {
@@ -67,7 +74,7 @@ header {
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  height: var(--header-height);
+  min-height: var(--header-min-height);
   padding: 0 var(--gap);
 }
 
@@ -79,27 +86,20 @@ footer {
   justify-content: center;
   gap: var(--gap);
   font-size: 1.2rem;
-  height: var(--footer-height);
+  min-height: var(--footer-min-height);
   padding: 0 var(--gap);
 }
 
+/* --------------------------------------------------
+   BOARD
+   -------------------------------------------------- */
 .board-lists {
   display: grid;
-  /* grid-template-columns: repeat(4, 1fr); */
-  /* grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); */
-  /* grid-template-columns: repeat(
-    auto-fit,
-    minmax(260px, 300px)
-  ); */
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(260px, 360px)
-  );
-  grid-gap: var(--gap);
+  grid-template-columns: repeat(auto-fit, minmax(16.25rem, 22.5rem));
+  gap: var(--gap);
   justify-content: center;
   font-size: 1.2rem;
   width: 100%;
-  /* max-width: 1200px; */
   margin: 0 auto;
 }
 
@@ -110,7 +110,6 @@ footer {
   justify-content: center;
   color: var(--card-bg);
   font-size: 1.4rem;
-  /* text-align: center; */
   height: 100%;
   width: 100%;
 }
@@ -120,6 +119,9 @@ footer {
   font-size: 1.4rem;
 }
 
+/* --------------------------------------------------
+   LINKS & FOOTER
+   -------------------------------------------------- */
 a {
   border: var(--border-transparent);
   color: inherit;
@@ -145,13 +147,16 @@ a:hover {
   max-width: 100%;
 }
 
+/* --------------------------------------------------
+   LISTS & CARDS
+   -------------------------------------------------- */
 .list {
   background-color: var(--list-bg);
   border: var(--border-transparent);
   border-radius: var(--border-radius);
   height: max-content;
   width: 100%;
-  /* min-width: 350px; */
+  padding: 0 0 var(--gap) 0;
 }
 
 .list-header {
@@ -160,7 +165,6 @@ a:hover {
   padding: var(--gap);
 }
 
-/* list items area */
 .list-items {
   flex: 1;
   padding: 0 var(--gap) var(--gap);
@@ -170,7 +174,7 @@ a:hover {
 .list-items li {
   background: var(--card-bg);
   border-radius: var(--border-radius);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.0625rem 0.0625rem rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -178,13 +182,12 @@ a:hover {
   margin-bottom: var(--gap);
 }
 
-.list-items li:last-child {
-  /* margin-bottom: 0; */
-}
-
+/* --------------------------------------------------
+   ADD CARD
+   -------------------------------------------------- */
 .add-card {
   background-color: var(--list-bg);
-  border-top: 1px solid #ccc;
+  border-top: 0.0625rem solid #ccc;
   display: flex;
   flex-direction: column;
   padding: var(--gap);
@@ -192,19 +195,18 @@ a:hover {
 
 .add-card input {
   border-radius: var(--border-radius);
-  box-shadow: 0 1px 1px rgba(233, 231, 231, 0.1);
-  /* font-size: 1rem; */
   font-size: 1.2rem;
-  /* padding: var(--gap); */
-  height: 70px;
-  /* height: 50px; */
-  padding: 0.5rem;
+  padding: var(--gap);
+  min-height: 3rem;
+}
+
+.add-a-card-button {
+  padding: 0 var(--gap);
 }
 
 .add-a-card-button button {
-  border: var(--border-transparent);
   background-color: transparent;
-  /* font-size: 1rem; */
+  border-radius: var(--border-radius);
   font-size: 1.2rem;
   padding: var(--gap);
   text-align: left;
@@ -213,8 +215,6 @@ a:hover {
 
 .add-card-buttons {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
   gap: var(--gap);
   padding-top: var(--gap);
 }
@@ -229,9 +229,18 @@ a:hover {
   padding: var(--gap);
 }
 
+.add-card input,
+.add-card-buttons button,
+.card-item button {
+  line-height: 1.4;
+}
+
+/* --------------------------------------------------
+   CARD
+   -------------------------------------------------- */
 .card-item {
   border: var(--border-transparent);
-  border-radius: 6px;
+  border-radius: 0.375rem;
   cursor: grab;
   display: flex;
   align-items: center;
@@ -247,114 +256,83 @@ a:hover {
   color: var(--card-bg);
   cursor: pointer;
   font-size: 1.2rem;
-  height: 40px;
-  width: 40px;
-  /* height: 2rem;
-  width: 2rem; */
+  height: 2.5rem;
+  width: 2.5rem;
 }
 
-.card-item:focus,
 .card-item:hover {
   border-color: #007bff;
-  box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+  box-shadow: 0 0 0.625rem rgba(0, 123, 255, 0.5);
 }
 
 .card-item:active {
   cursor: grabbing;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+  transform: scale(1.03);
 }
 
+/* --------------------------------------------------
+   MODAL (Shared)
+   -------------------------------------------------- */
 .modal-overlay {
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   z-index: 10;
-  pointer-events: auto;
 }
 
 .modal-content {
   background: white;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.2);
+  border-radius: 0.375rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  gap: 1rem;
-  padding: 1rem;
-  width: 600px;
-  height: 50%;
-}
-
-.modal-content label {
-  display: none;
+  gap: var(--gap);
+  padding: var(--gap);
+  width: min(90vw, 37.5rem);
+  max-height: 80vh;
 }
 
 .modal-content textarea {
   font-family: inherit;
-  /* font-size: 1.1rem; */
   font-size: 1.2rem;
   padding: 0.5rem;
-  height: 50%;
   width: 100%;
 }
 
-.modal-content .modal-actions {
+.modal-actions {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: var(--gap);
 }
 
-.modal-content .modal-actions button {
+.modal-actions button {
   background-color: var(--button-bg);
-  border: var(--border-transparent);
   border-radius: var(--border-radius);
   color: var(--card-bg);
-  cursor: pointer;
-  /* font-size: 0.9rem; */
   font-size: 1.2rem;
   padding: var(--gap);
-  width: 500px;
-  transition: var(--transition-all-property);
+  width: 100%;
+  max-width: 31.25rem;
 }
 
-.modal-content .modal-actions .modal-actions-cancel:focus,
-.modal-content .modal-actions .modal-actions-cancel:hover {
-  background-color: var(--button-bg-transition);
-  border-color: var(--button-border-color);
-}
-
-.modal-content .modal-actions .modal-actions-save:focus,
-.modal-content .modal-actions .modal-actions-save:hover {
-  background-color: var(--button-bg-transition);
-  border-color: var(--button-border-color);
-}
-
-.modal-loading-text {
-  text-align: center;
-}
-
-/* Responsive mobile-first */
+/* --------------------------------------------------
+   RESPONSIVE
+   -------------------------------------------------- */
 @media (max-width: 600px) {
+  .board-lists {
+    grid-template-columns: 1fr;
+  }
+
   main {
     padding: var(--gap);
   }
 
-  .board-lists {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
   footer {
-    display: flex;
     flex-wrap: wrap;
+    padding: var(--gap);
   }
 
   .footer-made-by-text {
@@ -363,27 +341,18 @@ a:hover {
     justify-content: center;
   }
 
-  .add-card {
-    display: flex;
+  .modal-actions {
     flex-direction: column;
-    gap: var(--gap);
-  }
-
-  .modal-content {
-    height: 50%;
-    width: 400px;
-    max-width: 90%;
   }
 }
 
 @media (min-width: 1440px) {
   .board-lists {
+    max-width: 75rem;
     grid-template-columns: repeat(4, 1fr);
-    /* max-width: 1400px; */
-    max-width: 1200px;
   }
 
   .list {
-    min-width: 350px;
+    min-width: 21.875rem;
   }
 }

@@ -104,6 +104,8 @@ export const List = ({ list }: Props) => {
       {isAdding && (
         <section className="add-card">
           <input
+            id="new-card-title"
+            name="newCardTitle"
             ref={inputRef}
             placeholder="Add new card..."
             value={newTitle}
